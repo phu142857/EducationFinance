@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/EducationFinance.API/EducationFinance.API.csproj" />
+    <Project Path="src/EducationFinance.Application/EducationFinance.Application.csproj" />
+    <Project Path="src/EducationFinance.Domain/EducationFinance.Domain.csproj" />
+    <Project Path="src/EducationFinance.Infrastructure/EducationFinance.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/EducationFinance.API.IntegrationTests/EducationFinance.API.IntegrationTests.csproj" />
+    <Project Path="tests/EducationFinance.Application.Tests/EducationFinance.Application.Tests.csproj" />
+    <Project Path="tests/EducationFinance.Domain.Tests/EducationFinance.Domain.Tests.csproj" />
+  </Folder>
+</Solution>
