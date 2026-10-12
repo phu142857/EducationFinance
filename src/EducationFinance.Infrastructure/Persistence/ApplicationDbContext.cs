@@ -5,12 +5,13 @@ using EducationFinance.Domain.Modules.Finance.Entities;
 using EducationFinance.Domain.Modules.Identity.Entities;
 using EducationFinance.Domain.Modules.Organization.Entities;
 using Microsoft.EntityFrameworkCore;
+using EducationFinance.Application.Abstractions.Persistence;
 
 namespace EducationFinance.Infrastructure.Persistence;
 
 public sealed class ApplicationDbContext(
     DbContextOptions<ApplicationDbContext> options)
-    : DbContext(options)
+    : DbContext(options), IApplicationDbContext
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
