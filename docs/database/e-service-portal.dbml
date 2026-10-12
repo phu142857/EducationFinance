@@ -1,0 +1,303 @@
+Project EServicePortalDb {
+  database_type: 'SQLServer'
+}
+
+Enum EServiceParentAccountStatus {
+  Unknown
+  PendingVerification
+  Active
+  Suspended
+  Closed
+}
+
+Enum EServiceAssistedRegistrationStatus {
+  Unknown
+  Pending
+  AwaitingVerification
+  Verified
+  Rejected
+  Expired
+  Revoked
+}
+
+Enum EServiceRelationshipType {
+  Unknown
+  Parent
+  Guardian
+  Other
+}
+
+Enum EServiceEducationAccountStatus {
+  Unknown
+  Pending
+  Active
+  Frozen
+  Extended
+  Closed
+}
+
+Enum EServiceAccountTransactionType {
+  Unknown
+  TopUp
+  FeePayment
+  Refund
+  CpfTransfer
+  Adjustment
+}
+
+Enum EServiceChargeStatus {
+  Unknown
+  Outstanding
+  PartiallyPaid
+  Paid
+  Waived
+  Cancelled
+  Overdue
+}
+
+Enum EServiceFasApplicationStatus {
+  Unknown
+  Draft
+  Submitted
+  AutoGranted
+  PendingSchoolDecision
+  Approved
+  Rejected
+  Cancelled
+}
+
+Enum EServicePaymentStatus {
+  Unknown
+  Pending
+  Processing
+  Succeeded
+  Failed
+  Refunded
+  Cancelled
+}
+
+Enum EServiceConversationStatus {
+  Unknown
+  Active
+  Completed
+  Escalated
+  Closed
+}
+
+Enum EServiceNotificationType {
+  Unknown
+  FasStatusChanged
+  PaymentStatusChanged
+  AccountStatusChanged
+  FeeDueReminder
+  General
+}
+
+Enum EServiceNotificationStatus {
+  Unknown
+  Pending
+  Sent
+  Failed
+  Read
+}
+
+Enum EServiceAuditActionType {
+  Unknown
+  Created
+  Updated
+  Deleted
+  Submitted
+  Approved
+  Rejected
+  Authenticated
+  Paid
+  Other
+}
+
+Enum EServiceOutboxMessageType {
+  Unknown
+  FasApplicationSubmittedV1
+  PaymentSettledV1
+  PaymentRefundedV1
+  ParentProfileChangedV1
+}
+
+Table ParentAccounts {
+  parent_id uniqueidentifier [pk]
+  singpass_uin_fin varchar(20) [unique]
+  name nvarchar(150) [not null]
+  email varchar(254)
+  phone_number varchar(30)
+  status EServiceParentAccountStatus [not null]
+  created_at datetime2 [not null]
+  updated_at datetime2 [not null]
+}
+
+Table ParentProfiles {
+  parent_id uniqueidentifier [pk]
+  residential_address nvarchar(500)
+  mailing_address nvarchar(500)
+  updated_at datetime2 [not null]
+}
+
+Table AssistedRegistrations {
+  registration_id uniqueidentifier [pk]
+  registration_code_hash varchar(128) [not null, unique]
+  parent_identification_hash varchar(128) [not null]
+  child_birth_certificate_hash varchar(128) [not null]
+  status EServiceAssistedRegistrationStatus [not null]
+  expires_at datetime2 [not null]
+  verified_at datetime2
+  verified_by_staff_user_id uniqueidentifier [note: 'Logical Admin reference; no cross-database FK']
+  created_at datetime2 [not null]
+}
+
+Table ChildProfiles {
+  child_id uniqueidentifier [pk]
+  external_student_id uniqueidentifier [not null, unique, note: 'Logical Admin reference; no cross-database FK']
+  name nvarchar(150) [not null]
+  school_id uniqueidentifier [not null, note: 'Logical Admin reference; no cross-database FK']
+  school_name nvarchar(200) [not null]
+  is_eligible bit [not null]
+  last_synced_at datetime2 [not null]
+}
+
+Table FamilyLinks {
+  link_id uniqueidentifier [pk]
+  parent_id uniqueidentifier [not null]
+  child_id uniqueidentifier [not null]
+  relationship_type EServiceRelationshipType [not null]
+  is_primary bit [not null]
+
+  indexes {
+    (parent_id, child_id) [unique]
+  }
+}
+
+Table EducationAccountSummaries {
+  account_id uniqueidentifier [pk]
+  child_id uniqueidentifier [not null]
+  account_number_masked varchar(50) [not null]
+  balance decimal(18,2) [not null]
+  status EServiceEducationAccountStatus [not null]
+  last_synced_at datetime2 [not null]
+}
+
+Table AccountTransactionViews {
+  transaction_id uniqueidentifier [pk]
+  account_id uniqueidentifier [not null]
+  transaction_type EServiceAccountTransactionType [not null]
+  amount decimal(18,2) [not null]
+  description nvarchar(500)
+  transaction_date datetime2 [not null]
+}
+
+Table ChargeSummaries {
+  charge_id uniqueidentifier [pk]
+  account_id uniqueidentifier [not null]
+  external_assessment_id uniqueidentifier [not null, unique, note: 'Logical Admin reference; no cross-database FK']
+  description nvarchar(500) [not null]
+  amount decimal(18,2) [not null]
+  outstanding_amount decimal(18,2) [not null]
+  status EServiceChargeStatus [not null]
+  last_synced_at datetime2 [not null]
+}
+
+Table FasApplications {
+  application_id uniqueidentifier [pk]
+  parent_id uniqueidentifier [not null]
+  reference_number varchar(50) [unique]
+  status EServiceFasApplicationStatus [not null]
+  is_draft bit [not null]
+  household_income decimal(18,2)
+  declaration_accepted bit [not null]
+  submitted_at datetime2
+  updated_at datetime2 [not null]
+}
+
+Table Payments {
+  payment_id uniqueidentifier [pk]
+  parent_id uniqueidentifier [not null]
+  charge_id uniqueidentifier [not null]
+  external_account_id uniqueidentifier [note: 'Logical Admin reference; no cross-database FK']
+  payment_method varchar(30) [not null]
+  amount decimal(18,2) [not null]
+  status EServicePaymentStatus [not null]
+  idempotency_key varchar(100) [not null, unique]
+  provider_reference varchar(100)
+  created_at datetime2 [not null]
+  updated_at datetime2 [not null]
+}
+
+Table Receipts {
+  receipt_id uniqueidentifier [pk]
+  payment_id uniqueidentifier [not null, unique]
+  reference_number varchar(50) [not null, unique]
+  amount decimal(18,2) [not null]
+  issued_at datetime2 [not null]
+}
+
+Table ChatConversations {
+  conversation_id uniqueidentifier [pk]
+  parent_id uniqueidentifier [not null]
+  status EServiceConversationStatus [not null]
+  consent_to_fas_prefill bit [not null]
+  started_at datetime2 [not null]
+  ended_at datetime2
+}
+
+Table ParentNotifications {
+  notification_id uniqueidentifier [pk]
+  parent_id uniqueidentifier [not null]
+  notification_type EServiceNotificationType [not null]
+  subject nvarchar(200) [not null]
+  status EServiceNotificationStatus [not null]
+  created_at datetime2 [not null]
+  sent_at datetime2
+}
+
+Table AuditEvents {
+  event_id uniqueidentifier [pk]
+  parent_id uniqueidentifier
+  action_type EServiceAuditActionType [not null]
+  target_entity varchar(100) [not null]
+  entity_id uniqueidentifier
+  old_values nvarchar(max)
+  new_values nvarchar(max)
+  ip_address varchar(45)
+  timestamp datetime2 [not null]
+}
+
+Table OutboxMessages {
+  message_id uniqueidentifier [pk]
+  message_type EServiceOutboxMessageType [not null]
+  payload nvarchar(max) [not null]
+  occurred_at datetime2 [not null]
+  processed_at datetime2
+  retry_count int [not null]
+  last_error nvarchar(max)
+}
+
+Table InboxMessages {
+  message_id uniqueidentifier [not null]
+  consumer nvarchar(250) [not null]
+  processed_at datetime2 [not null]
+
+  indexes {
+    (message_id, consumer) [pk]
+  }
+}
+
+Ref: ParentProfiles.parent_id - ParentAccounts.parent_id
+Ref: FamilyLinks.parent_id > ParentAccounts.parent_id
+Ref: FamilyLinks.child_id > ChildProfiles.child_id
+Ref: EducationAccountSummaries.child_id > ChildProfiles.child_id
+Ref: AccountTransactionViews.account_id > EducationAccountSummaries.account_id
+Ref: ChargeSummaries.account_id > EducationAccountSummaries.account_id
+Ref: FasApplications.parent_id > ParentAccounts.parent_id
+Ref: Payments.parent_id > ParentAccounts.parent_id
+Ref: Payments.charge_id > ChargeSummaries.charge_id
+Ref: Receipts.payment_id - Payments.payment_id
+Ref: ChatConversations.parent_id > ParentAccounts.parent_id
+Ref: ParentNotifications.parent_id > ParentAccounts.parent_id
+Ref: AuditEvents.parent_id > ParentAccounts.parent_id

@@ -1,184 +1,131 @@
-
 # EducationFinance
 
-EducationFinance is a .NET backend for an Education Finance system. It supports the e-Service Portal for parents and the Admin Portal for HQ/MOE and school staff, with role-based access control and school-scoped permissions.
+EducationFinance contains two fully independent .NET services:
 
-## 1. Project Structure
+- **Admin Portal** serves HQ/MOE and school staff operations.
+- **E-Service Portal** serves parents and citizens.
+
+Each portal follows Clean Architecture and owns its Domain, Application, Infrastructure, API, configuration, EF Core migrations, and tests. There is intentionally no shared application or domain layer between the portals.
+
+## Project structure
 
 ```text
 EducationFinance/
-├── EducationFinance.slnx
-├── src/
-│   ├── EducationFinance.Domain/
-│   ├── EducationFinance.Application/
-│   ├── EducationFinance.Infrastructure/
-│   └── EducationFinance.API/
-└── tests/
-    ├── EducationFinance.Domain.Tests/
-    ├── EducationFinance.Application.Tests/
-    └── EducationFinance.API.IntegrationTests/
+|-- EducationFinance.slnx
+|-- src/
+|   |-- AdminPortal/
+|   |   |-- AdminPortal.Domain/
+|   |   |-- AdminPortal.Application/
+|   |   |-- AdminPortal.Infrastructure/
+|   |   `-- AdminPortal.API/
+|   `-- EServicePortal/
+|       |-- EServicePortal.Domain/
+|       |-- EServicePortal.Application/
+|       |-- EServicePortal.Infrastructure/
+|       `-- EServicePortal.API/
+`-- tests/
+    |-- AdminPortal/
+    |   |-- AdminPortal.Domain.Tests/
+    |   |-- AdminPortal.Application.Tests/
+    |   `-- AdminPortal.API.IntegrationTests/
+    `-- EServicePortal/
+        |-- EServicePortal.Domain.Tests/
+        |-- EServicePortal.Application.Tests/
+        `-- EServicePortal.API.IntegrationTests/
 ```
 
-### Project Responsibilities
+## Architecture rules
 
-| Project | Responsibility |
-|---|---|
-| `EducationFinance.Domain` | Core entities, domain rules, and business invariants. |
-| `EducationFinance.Application` | Use cases, application services, DTOs, interfaces, and validation. |
-| `EducationFinance.Infrastructure` | EF Core, database access, entity configurations, migrations, and external service implementations. |
-| `EducationFinance.API` | HTTP endpoints, controllers, middleware, dependency injection, and API configuration. |
-| `EducationFinance.Domain.Tests` | Unit tests for domain logic. |
-| `EducationFinance.Application.Tests` | Unit tests for application logic. |
-| `EducationFinance.API.IntegrationTests` | API and integration tests. |
+The dependency direction is the same inside each portal:
 
-Follow the existing folder structure within each project when adding new files.
-
-## 2. Architecture Rules
-
-Dependencies must follow the Clean Architecture direction:
-
-- **Domain:** Must not depend on other project layers.
-- **Application:** May depend on Domain.
-- **Infrastructure:** Implements persistence and external service interfaces.
-- **API:** Connects the layers through dependency injection and exposes HTTP endpoints.
-- **Tests:** Test the behavior of their corresponding layer.
-
-Keep controllers thin. Business logic belongs in Domain or Application, while database queries and persistence logic belong in Infrastructure.
-
-Avoid circular dependencies between projects.
-
-## 3. Adding a New Feature
-
-For a feature such as student management, fee assessments, or payments:
-
-1. **Domain:** Add or update entities and business rules when required.
-2. **Application:** Add use cases, DTOs, interfaces, and validators.
-3. **Infrastructure:** Add entity configurations and implementations for database or external service operations.
-4. **API:** Add endpoints/controllers and dependency injection registrations when required.
-5. **Tests:** Add tests for the new behavior.
-
-Do not create files in every layer automatically. Only add files that have a clear responsibility.
-
-## 4. File Naming Conventions
-
-Use standard C# naming conventions consistently.
-
-| Item | Convention | Example |
-|---|---|---|
-| Classes and records | PascalCase | `StudentService.cs` |
-| Interfaces | Prefix with `I` | `IStudentRepository.cs` |
-| Methods | PascalCase | `GetStudentByIdAsync()` |
-| Async methods | Suffix with `Async` | `CreateStudentAsync()` |
-| Local variables and parameters | camelCase | `studentId` |
-| Private fields | `_camelCase` | `_studentRepository` |
-| Request DTOs | Descriptive purpose + `Request` | `CreateStudentRequest.cs` |
-| Response DTOs | Descriptive purpose + `Response` | `StudentResponse.cs` |
-| Validators | Type name + `Validator` | `CreateStudentRequestValidator.cs` |
-| EF Core configurations | Entity name + `Configuration` | `StudentConfiguration.cs` |
-| Test classes | Type or feature name + `Tests` | `StudentServiceTests.cs` |
-| Migrations | PascalCase migration name | `AddStudentStatus` |
-
-Additional rules:
-
-- Use one main public type per file in most cases.
-- The filename should match the main public type.
-- Keep namespaces consistent with the project and folder structure.
-- Prefer descriptive names over vague names such as `Helper.cs`, `Common.cs`, or `Manager.cs`.
-- Avoid unnecessary abbreviations.
-- Use English for identifiers, comments, and technical documentation.
-
-## 5. Database and EF Core
-
-The project uses Entity Framework Core with SQL Server.
-
-- Keep entity mapping, indexes, and constraints in Infrastructure.
-- Create a new migration whenever the database schema changes.
-- Review generated migrations before applying them.
-- Never modify a migration that has already been applied to a shared environment; create a new migration instead.
-- Do not use `EnsureCreated()` as a replacement for migrations.
-- Verify the target connection string before updating a database.
-
-Create a migration from the repository root:
-
-```bash
-dotnet ef migrations add AddFeatureName \
-  --project src/EducationFinance.Infrastructure \
-  --startup-project src/EducationFinance.API \
-  --output-dir Persistence/Migrations
+```text
+API -> Application <- Infrastructure
+          |
+        Domain
 ```
 
-Apply migrations to the configured development database:
+- Domain has no dependency on another layer.
+- Application depends only on its portal's Domain project.
+- Infrastructure implements its portal's persistence and integration abstractions.
+- API is the composition root and exposes only that portal's endpoints.
+- A project in one portal must not reference a project in the other portal.
+- Cross-portal communication, when needed, must use an explicit external contract such as HTTP or messaging rather than a project reference.
 
-```bash
-dotnet ef database update \
-  --project src/EducationFinance.Infrastructure \
-  --startup-project src/EducationFinance.API
-```
+Keep controllers thin. Put business rules in Domain, use cases in Application, persistence and external integrations in Infrastructure, and HTTP concerns in API.
 
-Never commit database passwords, production connection strings, tokens, or certificates.
+## Configuration
 
-## 6. Build, Test, and Run
+The services use independent connection-string keys and local ports:
 
-Run commands from the repository root.
+| Service | Database | Connection string | HTTP | HTTPS |
+|---|---|---|---:|---:|
+| Admin Portal | `AdminPortalDb` | `AdminPortalConnection` | `5183` | `7101` |
+| E-Service Portal | `EServicePortalDb` | `EServicePortalConnection` | `5184` | `7100` |
 
-Restore dependencies:
+The database users must be different. Neither service may query, join, migrate, or hold credentials for the other service database. Cross-portal data moves through versioned APIs/events and the local outbox/inbox tables described in `docs/contracts/portal-integration-events.md`.
+
+Keep real credentials in environment variables or local secret storage. Do not commit passwords, tokens, certificates, or production connection strings.
+
+## Build and test
+
+Run from the repository root:
 
 ```bash
 dotnet restore
-```
-
-Build the solution:
-
-```bash
+dotnet tool restore
 dotnet build
-```
-
-Run all tests:
-
-```bash
 dotnet test
 ```
 
-Run API integration tests only:
+Run one service:
 
 ```bash
-dotnet test tests/EducationFinance.API.IntegrationTests/EducationFinance.API.IntegrationTests.csproj
+dotnet run --project src/AdminPortal/AdminPortal.API
+dotnet run --project src/EServicePortal/EServicePortal.API
 ```
 
-Run the API:
+Run one portal's tests:
 
 ```bash
-dotnet run --project src/EducationFinance.API
+dotnet test tests/AdminPortal/AdminPortal.API.IntegrationTests
+dotnet test tests/EServicePortal/EServicePortal.API.IntegrationTests
 ```
 
-Always inspect the test summary. A successful command with `total: 0` means no tests were executed.
+Always inspect the test summary. A successful command with zero discovered tests does not validate behavior.
 
-Use Swagger/OpenAPI in the development environment when enabled.
+## EF Core migrations
 
-## 7. Configuration and Secrets
+Admin Portal:
 
-- Keep machine-specific configuration local.
-- Ensure `appsettings.Development.json` is ignored by Git when it contains local credentials.
-- Prefer environment variables or a secret manager for sensitive configuration.
-- Use placeholders in example configuration files.
-- Never commit real passwords, access tokens, private keys, or production secrets.
-- If a secret is committed, rotate it and follow the repository's Git-history cleanup procedure.
+```bash
+dotnet tool run dotnet-ef migrations add AddFeatureName \
+  --context AdminDbContext \
+  --project src/AdminPortal/AdminPortal.Infrastructure \
+  --startup-project src/AdminPortal/AdminPortal.API \
+  --output-dir Persistence/Migrations
+```
 
-Adding a file to `.gitignore` does not stop Git from tracking a file that is already tracked.
+E-Service Portal:
 
-## 8. Git and Code Quality
+```bash
+dotnet tool run dotnet-ef migrations add AddFeatureName \
+  --context EServiceDbContext \
+  --project src/EServicePortal/EServicePortal.Infrastructure \
+  --startup-project src/EServicePortal/EServicePortal.API \
+  --output-dir Persistence/Migrations
+```
 
-- Use descriptive branch names, such as `feature/student-search` or `fix/payment-validation`.
-- Keep commits focused on one logical change.
-- Use clear, imperative commit messages, such as `Add student search endpoint`.
-- Avoid unrelated refactoring in feature commits.
-- Do not commit `bin/`, `obj/`, local database files, logs, IDE caches, or local secrets.
-- Add or update tests when behavior changes.
-- Handle exceptions explicitly; do not silently swallow errors.
-- Validate all external input.
-- Enforce authorization on the server for every protected operation. Hiding UI elements is not access control.
-- Use EF Core or parameterized SQL queries; never concatenate untrusted input into SQL.
-- Never log passwords, access tokens, or sensitive personal data.
+Review generated migrations before applying them. Never edit an already-applied shared-environment migration; create a new migration instead.
+
+## Naming and code quality
+
+- Use PascalCase for types and files, camelCase for locals and parameters, and `_camelCase` for private fields.
+- Prefix interfaces with `I` and suffix asynchronous methods with `Async`.
+- Use descriptive request, response, validator, and EF configuration names.
+- Validate all external input and enforce authorization on the server.
+- Use EF Core or parameterized SQL; never concatenate untrusted input into SQL.
+- Do not log passwords, access tokens, or sensitive personal data.
+- Add tests in the same portal as the behavior being changed.
 
 Before committing, run:
 
@@ -188,16 +135,3 @@ dotnet test
 git diff --check
 git status --short
 ```
-
-Review staged changes before creating the commit.
-
-## 9. Pull Request Checklist
-
-- [ ] Code follows the architecture and dependency rules.
-- [ ] File names and namespaces follow project conventions.
-- [ ] No secrets or local-only files are included.
-- [ ] Database changes include a reviewed migration.
-- [ ] The solution builds successfully.
-- [ ] Relevant tests are discovered and pass.
-- [ ] `git diff --check` passes.
-- [ ] The pull request describes the change and any required migration or configuration steps.

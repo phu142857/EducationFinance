@@ -2,6 +2,9 @@
 **/bin/
 **/obj/
 
+# Local refactoring backups
+.migration-backup/
+
 # Visual Studio / IDE
 .vs/
 .idea/

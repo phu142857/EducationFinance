@@ -1,0 +1,335 @@
+Project AdminPortalDb {
+  database_type: 'SQLServer'
+}
+
+Enum AdminStudentEnrollmentStatus {
+  Unknown
+  Active
+  Inactive
+  Transferred
+  Graduated
+  DroppedOut
+}
+
+Enum AdminRelationshipType {
+  Unknown
+  Parent
+  Guardian
+  Other
+}
+
+Enum AdminEducationAccountStatus {
+  Unknown
+  Pending
+  Active
+  Frozen
+  Extended
+  Closed
+}
+
+Enum AdminCpfTransferStatus {
+  Unknown
+  NotRequired
+  Pending
+  Processing
+  Succeeded
+  Failed
+}
+
+Enum AdminAccountTransactionType {
+  Unknown
+  TopUp
+  FeePayment
+  Refund
+  CpfTransfer
+  Adjustment
+}
+
+Enum AdminFeeType {
+  Unknown
+  SchoolFee
+  MiscellaneousFee
+  SecondTierMiscellaneousFee
+  ExaminationFee
+}
+
+Enum AdminFeeAssessmentPaymentStatus {
+  Unknown
+  Outstanding
+  PartiallyPaid
+  Paid
+  Waived
+  Cancelled
+  Overdue
+}
+
+Enum AdminPaymentStatus {
+  Unknown
+  Pending
+  Processing
+  Succeeded
+  Failed
+  Refunded
+  Cancelled
+}
+
+Enum AdminBudgetType {
+  Unknown
+  NationalMoefas
+  SchoolSbfas
+  Other
+}
+
+Enum AdminFasApplicationStatus {
+  Unknown
+  Draft
+  Submitted
+  AutoGranted
+  PendingSchoolDecision
+  Approved
+  Rejected
+  Cancelled
+}
+
+Enum AdminAuditActionType {
+  Unknown
+  Created
+  Updated
+  Deleted
+  Submitted
+  Approved
+  Rejected
+  Authenticated
+  Paid
+  Exported
+  Simulated
+  Other
+}
+
+Enum AdminOutboxMessageType {
+  Unknown
+  EducationAccountSummaryChangedV1
+  EducationAccountTransactionPostedV1
+  FeeChargeChangedV1
+  FasApplicationStatusChangedV1
+  FamilyChildProfileChangedV1
+}
+
+Table Schools {
+  school_id uniqueidentifier [pk]
+  school_code varchar(20) [not null, unique]
+  school_name nvarchar(150) [not null]
+  address nvarchar(255)
+  contact_number varchar(20)
+  created_at datetime2 [not null]
+}
+
+Table Cohorts {
+  cohort_id uniqueidentifier [pk]
+  school_id uniqueidentifier [not null]
+  cohort_year int [not null]
+  level_name nvarchar(50) [not null]
+  is_active bit [not null]
+}
+
+Table Classes {
+  class_id uniqueidentifier [pk]
+  cohort_id uniqueidentifier [not null]
+  class_name varchar(50) [not null]
+  academic_year varchar(20) [not null]
+}
+
+Table Students {
+  student_id uniqueidentifier [pk]
+  birth_cert_number varchar(30) [not null, unique]
+  full_name nvarchar(100) [not null]
+  date_of_birth date [not null]
+  citizenship varchar(50) [not null]
+  enrollment_status AdminStudentEnrollmentStatus [not null]
+  created_at datetime2 [not null]
+}
+
+Table StudentClasses {
+  student_id uniqueidentifier [not null]
+  class_id uniqueidentifier [not null]
+  assigned_at datetime2 [not null]
+  ended_at datetime2
+
+  indexes {
+    (student_id, class_id) [pk]
+  }
+}
+
+Table FamilyLinks {
+  link_id uniqueidentifier [pk]
+  external_parent_id uniqueidentifier [not null, note: 'Logical E-Service reference; no cross-database FK']
+  student_id uniqueidentifier [not null]
+  relationship_type AdminRelationshipType [not null]
+  is_primary bit [not null]
+}
+
+Table StaffUsers {
+  staff_user_id uniqueidentifier [pk]
+  username varchar(100) [not null, unique]
+  name nvarchar(100) [not null]
+  email varchar(100)
+  phone_number varchar(20)
+  password_hash varchar(255) [not null]
+  address nvarchar(500)
+  is_active bit [not null]
+  created_at datetime2 [not null]
+  updated_at datetime2 [not null]
+}
+
+Table EducationAccounts {
+  account_id uniqueidentifier [pk]
+  student_id uniqueidentifier [not null]
+  account_number varchar(30) [not null, unique]
+  balance decimal(18,2) [not null]
+  status AdminEducationAccountStatus [not null]
+  auto_created_at date
+  scheduled_closure_date date
+  cpf_transfer_status AdminCpfTransferStatus
+}
+
+Table AccountTransactions {
+  transaction_id uniqueidentifier [pk]
+  account_id uniqueidentifier [not null]
+  transaction_type AdminAccountTransactionType [not null]
+  amount decimal(18,2) [not null]
+  balance_after decimal(18,2) [not null]
+  reference_no varchar(50)
+  description nvarchar(255)
+  created_at datetime2 [not null]
+}
+
+Table TopUpRules {
+  rule_id uniqueidentifier [pk]
+  rule_name nvarchar(100) [not null]
+  target_age int
+  target_level varchar(50)
+  top_up_amount decimal(18,2) [not null]
+  frequency varchar(30) [not null]
+  is_active bit [not null]
+  created_at datetime2 [not null]
+}
+
+Table FeeConfigurations {
+  configuration_id uniqueidentifier [pk]
+  cohort_id uniqueidentifier
+  fee_type AdminFeeType [not null]
+  component_name nvarchar(100) [not null]
+  amount decimal(18,2) [not null]
+  academic_term varchar(20) [not null]
+  payment_deadline date [not null]
+}
+
+Table FeeAssessments {
+  assessment_id uniqueidentifier [pk]
+  account_id uniqueidentifier [not null]
+  total_billed_amount decimal(18,2) [not null]
+  subsidy_amount decimal(18,2) [not null]
+  payable_amount decimal(18,2) [not null]
+  payment_status AdminFeeAssessmentPaymentStatus [not null]
+  created_at datetime2 [not null]
+}
+
+Table Payments {
+  payment_id uniqueidentifier [pk]
+  assessment_id uniqueidentifier [not null]
+  account_id uniqueidentifier
+  payment_method varchar(30) [not null]
+  amount decimal(18,2) [not null]
+  status AdminPaymentStatus [not null]
+  receipt_reference varchar(50)
+  created_at datetime2 [not null]
+}
+
+Table Budgets {
+  budget_id uniqueidentifier [pk]
+  school_id uniqueidentifier
+  budget_type AdminBudgetType [not null]
+  allocated_amount decimal(18,2) [not null]
+  utilized_amount decimal(18,2) [not null]
+  fiscal_year int [not null]
+  updated_at datetime2 [not null]
+}
+
+Table FASSchemes {
+  scheme_id uniqueidentifier [pk]
+  scheme_name nvarchar(100) [not null]
+  income_ceiling decimal(18,2) [not null]
+  rules_json nvarchar(max)
+  is_active bit [not null]
+}
+
+Table SubsidyTiers {
+  tier_id uniqueidentifier [pk]
+  scheme_id uniqueidentifier [not null]
+  tier_name varchar(50) [not null]
+  fee_component_name nvarchar(100) [not null]
+  subsidy_percentage decimal(5,2)
+  fixed_subsidy_amount decimal(18,2)
+}
+
+Table FASApplications {
+  application_id uniqueidentifier [pk]
+  external_parent_id uniqueidentifier [not null, note: 'Logical E-Service reference; no cross-database FK']
+  scheme_id uniqueidentifier [not null]
+  reference_no varchar(30) [not null, unique]
+  channel varchar(20) [not null]
+  status AdminFasApplicationStatus [not null]
+  household_income decimal(18,2)
+  ml_risk_classification varchar(20)
+  rejection_reason nvarchar(500)
+  created_at datetime2 [not null]
+  updated_at datetime2 [not null]
+}
+
+Table AuditEvents {
+  event_id uniqueidentifier [pk]
+  staff_user_id uniqueidentifier
+  action_type AdminAuditActionType [not null]
+  target_entity varchar(50) [not null]
+  entity_id uniqueidentifier
+  old_values nvarchar(max)
+  new_values nvarchar(max)
+  ip_address varchar(45)
+  timestamp datetime2 [not null]
+}
+
+Table OutboxMessages {
+  message_id uniqueidentifier [pk]
+  message_type AdminOutboxMessageType [not null]
+  payload nvarchar(max) [not null]
+  occurred_at datetime2 [not null]
+  processed_at datetime2
+  retry_count int [not null]
+  last_error nvarchar(max)
+}
+
+Table InboxMessages {
+  message_id uniqueidentifier [not null]
+  consumer nvarchar(250) [not null]
+  processed_at datetime2 [not null]
+
+  indexes {
+    (message_id, consumer) [pk]
+  }
+}
+
+Ref: Cohorts.school_id > Schools.school_id
+Ref: Classes.cohort_id > Cohorts.cohort_id
+Ref: StudentClasses.student_id > Students.student_id
+Ref: StudentClasses.class_id > Classes.class_id
+Ref: FamilyLinks.student_id > Students.student_id
+Ref: EducationAccounts.student_id > Students.student_id
+Ref: AccountTransactions.account_id > EducationAccounts.account_id
+Ref: FeeConfigurations.cohort_id > Cohorts.cohort_id
+Ref: FeeAssessments.account_id > EducationAccounts.account_id
+Ref: Payments.assessment_id > FeeAssessments.assessment_id
+Ref: Payments.account_id > EducationAccounts.account_id
+Ref: Budgets.school_id > Schools.school_id
+Ref: SubsidyTiers.scheme_id > FASSchemes.scheme_id
+Ref: FASApplications.scheme_id > FASSchemes.scheme_id
+Ref: AuditEvents.staff_user_id > StaffUsers.staff_user_id

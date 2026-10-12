@@ -1,13 +1,24 @@
 <Solution>
-  <Folder Name="/src/">
-    <Project Path="src/EducationFinance.API/EducationFinance.API.csproj" />
-    <Project Path="src/EducationFinance.Application/EducationFinance.Application.csproj" />
-    <Project Path="src/EducationFinance.Domain/EducationFinance.Domain.csproj" />
-    <Project Path="src/EducationFinance.Infrastructure/EducationFinance.Infrastructure.csproj" />
+  <Folder Name="/src/AdminPortal/">
+    <Project Path="src/AdminPortal/AdminPortal.API/AdminPortal.API.csproj" />
+    <Project Path="src/AdminPortal/AdminPortal.Application/AdminPortal.Application.csproj" />
+    <Project Path="src/AdminPortal/AdminPortal.Domain/AdminPortal.Domain.csproj" />
+    <Project Path="src/AdminPortal/AdminPortal.Infrastructure/AdminPortal.Infrastructure.csproj" />
   </Folder>
-  <Folder Name="/tests/">
-    <Project Path="tests/EducationFinance.API.IntegrationTests/EducationFinance.API.IntegrationTests.csproj" />
-    <Project Path="tests/EducationFinance.Application.Tests/EducationFinance.Application.Tests.csproj" />
-    <Project Path="tests/EducationFinance.Domain.Tests/EducationFinance.Domain.Tests.csproj" />
+  <Folder Name="/src/EServicePortal/">
+    <Project Path="src/EServicePortal/EServicePortal.API/EServicePortal.API.csproj" />
+    <Project Path="src/EServicePortal/EServicePortal.Application/EServicePortal.Application.csproj" />
+    <Project Path="src/EServicePortal/EServicePortal.Domain/EServicePortal.Domain.csproj" />
+    <Project Path="src/EServicePortal/EServicePortal.Infrastructure/EServicePortal.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/AdminPortal/">
+    <Project Path="tests/AdminPortal/AdminPortal.API.IntegrationTests/AdminPortal.API.IntegrationTests.csproj" />
+    <Project Path="tests/AdminPortal/AdminPortal.Application.Tests/AdminPortal.Application.Tests.csproj" />
+    <Project Path="tests/AdminPortal/AdminPortal.Domain.Tests/AdminPortal.Domain.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tests/EServicePortal/">
+    <Project Path="tests/EServicePortal/EServicePortal.API.IntegrationTests/EServicePortal.API.IntegrationTests.csproj" />
+    <Project Path="tests/EServicePortal/EServicePortal.Application.Tests/EServicePortal.Application.Tests.csproj" />
+    <Project Path="tests/EServicePortal/EServicePortal.Domain.Tests/EServicePortal.Domain.Tests.csproj" />
   </Folder>
 </Solution>
