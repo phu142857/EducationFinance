@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "Both Portals",
+    "Projects": [
+      {
+        "Path": "src\\AdminPortal\\AdminPortal.API\\AdminPortal.API.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "src\\EServicePortal\\EServicePortal.API\\EServicePortal.API.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

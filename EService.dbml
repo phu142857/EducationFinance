@@ -1,0 +1,176 @@
+Project EducationFinance_EServicePortal {
+  database_type: 'SQL Server'
+  Note: 'Draft v2: 12 tables. Proposed schema; business rules, ownership and cross-portal contracts require confirmation. No cross-database foreign keys.'
+}
+
+// Identity and Family: EServicePortal-owned data
+Table Parents {
+  Id uniqueidentifier [pk, not null]
+  ExternalIdentitySubject nvarchar(200) [unique, note: 'External identity provider subject; avoid storing national ID unless required. Use a filtered unique index for non-NULL values.']
+  FullName nvarchar(200)
+  Email nvarchar(255)
+  PhoneNumber nvarchar(30)
+  Address nvarchar(100)
+  MailingAddress nvarchar(50)
+  RegistrationMethod nvarchar(30) [not null, note: 'E.g. Singpass or assisted; values TBD']
+  Status nvarchar(30) [not null]
+  CreatedAt datetime2 [not null]
+  UpdatedAt datetime2
+}
+
+Table Families {
+  Id uniqueidentifier [pk, not null]
+  FamilyReference nvarchar(60) [unique, note: 'Use a filtered unique index for non-NULL values.']
+  Status nvarchar(30) [not null]
+  CreatedAt datetime2 [not null]
+  UpdatedAt datetime2
+}
+
+Table FamilyMembers {
+  Id uniqueidentifier [pk, not null]
+  FamilyId uniqueidentifier [not null]
+  ParentId uniqueidentifier [note: 'Populated for parent membership']
+  StudentId uniqueidentifier [note: 'Logical student identifier from AdminPortal; no cross-DB FK']
+  RelationshipType nvarchar(40) [not null]
+  IsPrimaryContact bit [not null, default: 0]
+  CreatedAt datetime2 [not null]
+
+  Note: 'Exactly one of ParentId or StudentId should be present; enforce via SQL CHECK constraint in migration.'
+  Indexes {
+    FamilyId
+    ParentId
+    StudentId
+  }
+}
+
+// Read models: copies for display only; AdminPortal remains authoritative
+Table StudentReadModels {
+  StudentId uniqueidentifier [pk, not null, note: 'Identifier owned by AdminPortal']
+  SchoolId uniqueidentifier [note: 'Logical reference to AdminPortal school']
+  StudentNumber nvarchar(60)
+  DisplayName nvarchar(200)
+  EnrollmentStatus nvarchar(30)
+  SyncedAt datetime2 [not null]
+}
+
+Table EducationAccountReadModels {
+  EducationAccountId uniqueidentifier [pk, not null, note: 'Identifier owned by AdminPortal']
+  StudentId uniqueidentifier [not null]
+  AccountNumberMasked nvarchar(60)
+  Balance decimal(18,2) [not null, default: 0, note: 'Display only; never use to authorize debits']
+  CurrencyCode char(3) [not null, default: 'SGD']
+  AccountStatus nvarchar(30) [not null]
+  SyncedAt datetime2 [not null]
+
+  Indexes { StudentId }
+}
+
+Table FeeAssessmentReadModels {
+  FeeAssessmentId uniqueidentifier [pk, not null, note: 'Identifier owned by AdminPortal']
+  StudentId uniqueidentifier [not null]
+  AcademicYear int
+  TermCode nvarchar(30)
+  TotalAmount decimal(18,2) [not null, default: 0]
+  SubsidyAmount decimal(18,2) [not null, default: 0]
+  PayableAmount decimal(18,2) [not null, default: 0]
+  AssessmentStatus nvarchar(30) [not null]
+  SyncedAt datetime2 [not null]
+
+  Indexes { StudentId }
+}
+
+Table FasApplicationReadModels {
+  FasApplicationId uniqueidentifier [pk, not null, note: 'Assumes AdminPortal owns submitted FAS application; confirm ownership']
+  FamilyId uniqueidentifier [not null]
+  ApplicationReference nvarchar(80)
+  ApplicationStatus nvarchar(30) [not null]
+  OutcomeSummary nvarchar(255)
+  SubmittedAt datetime2
+  LastStatusChangedAt datetime2
+  SyncedAt datetime2 [not null]
+
+  Indexes { FamilyId }
+}
+
+// EServicePortal-owned workflow data
+Table FasApplicationDrafts {
+  Id uniqueidentifier [pk, not null]
+  FamilyId uniqueidentifier [not null]
+  CreatedByParentId uniqueidentifier [not null]
+  DraftPayload nvarchar(max) [not null, note: 'Versioned JSON draft; validate and protect sensitive content']
+  DraftVersion int [not null, default: 1]
+  DraftStatus nvarchar(30) [not null]
+  SubmittedApplicationId uniqueidentifier [note: 'Logical identifier in AdminPortal; no cross-DB FK']
+  CreatedAt datetime2 [not null]
+  UpdatedAt datetime2 [not null]
+
+  Indexes { (FamilyId, DraftStatus) }
+}
+
+Table PaymentRequests {
+  Id uniqueidentifier [pk, not null, note: 'Business idempotency key; must remain stable across retries']
+  ParentId uniqueidentifier [not null]
+  EducationAccountId uniqueidentifier [not null, note: 'Logical reference to AdminPortal account']
+  FeeAssessmentId uniqueidentifier [note: 'Logical reference to AdminPortal fee assessment']
+  Amount decimal(18,2) [not null]
+  CurrencyCode char(3) [not null, default: 'SGD']
+  PaymentMethod nvarchar(40) [not null]
+  Status nvarchar(30) [not null]
+  ExternalReference nvarchar(100)
+  FailureReason nvarchar(500)
+  CreatedAt datetime2 [not null]
+  CompletedAt datetime2
+
+  Indexes { (ParentId, CreatedAt) }
+}
+
+// Reliable messaging without RabbitMQ: BackgroundService sends HTTPS to the other portal
+Table OutboxMessages {
+  Id uniqueidentifier [pk, not null, note: 'Stable message ID for deduplication']
+  MessageType nvarchar(200) [not null]
+  MessageVersion int [not null, default: 1]
+  Payload nvarchar(max) [not null]
+  CorrelationId uniqueidentifier
+  Destination nvarchar(100) [not null]
+  Status nvarchar(30) [not null, note: 'Pending, Processing, Published, Failed; transitions TBD']
+  OccurredAt datetime2 [not null]
+  NextAttemptAt datetime2
+  AttemptCount int [not null, default: 0]
+  LockedUntil datetime2 [note: 'Worker lease for concurrent processing']
+  PublishedAt datetime2
+  LastError nvarchar(max)
+
+  Indexes { (Status, NextAttemptAt) }
+}
+
+Table InboxMessages {
+  Id uniqueidentifier [pk, not null]
+  MessageId uniqueidentifier [not null, note: 'Sender OutboxMessages.Id']
+  ConsumerName nvarchar(150) [not null]
+  MessageType nvarchar(200) [not null]
+  MessageVersion int [not null, default: 1]
+  Payload nvarchar(max) [not null]
+  Status nvarchar(30) [not null]
+  ReceivedAt datetime2 [not null]
+  ProcessedAt datetime2
+  AttemptCount int [not null, default: 0]
+  LastError nvarchar(max)
+
+  Indexes {
+    (MessageId, ConsumerName) [unique]
+    (Status, ReceivedAt)
+  }
+}
+
+// Foreign keys ONLY within EServicePortalDB
+Ref: FamilyMembers.FamilyId > Families.Id
+Ref: FamilyMembers.ParentId > Parents.Id
+Ref: FamilyMembers.StudentId > StudentReadModels.StudentId
+Ref: EducationAccountReadModels.StudentId > StudentReadModels.StudentId
+Ref: FeeAssessmentReadModels.StudentId > StudentReadModels.StudentId
+Ref: FasApplicationReadModels.FamilyId > Families.Id
+Ref: FasApplicationDrafts.FamilyId > Families.Id
+Ref: FasApplicationDrafts.CreatedByParentId > Parents.Id
+Ref: PaymentRequests.ParentId > Parents.Id
+Ref: PaymentRequests.EducationAccountId > EducationAccountReadModels.EducationAccountId
+Ref: PaymentRequests.FeeAssessmentId > FeeAssessmentReadModels.FeeAssessmentId

@@ -1,0 +1,247 @@
+Project EducationFinance_AdminPortal_v2 {
+  database_type: 'SQL Server'
+  Note: 'Draft v2: 24 core tables. Proposed schema; business rules and ownership pending confirmation. Integration via Outbox/Inbox and internal HTTPS, no RabbitMQ.'
+}
+
+// School and student management
+Table Schools {
+  Id uniqueidentifier [pk, not null]
+  SchoolCode nvarchar(30) [not null, unique]
+  Name nvarchar(255) [not null]
+  Adress nvarchar(255) [not null]
+  Status nvarchar(30) [not null]
+  CreatedAt datetime2 [not null]
+}
+Table Cohorts {
+  Id uniqueidentifier [pk, not null]
+  SchoolId uniqueidentifier [not null]
+  StartYear int [not null]
+  EndYear int [not null]
+  LevelName nvarchar(100) [not null]
+  Name nvarchar(100) [not null]
+  Indexes { (SchoolId, LevelName, Name) [unique] }
+}
+Table Classes {
+  Id uniqueidentifier [pk, not null]
+  CohortId uniqueidentifier [not null]
+  ClassCode nvarchar(50) [not null]
+  Name nvarchar(100) [not null]
+  AcademicYear int [not null]
+  Indexes { (CohortId, ClassCode) [unique] }
+}
+Table Students {
+  Id uniqueidentifier [pk, not null]
+  CurrentClassId uniqueidentifier [note: 'Current class only; enrollment history requires separate table']
+  StudentNumber nvarchar(50) [not null, unique]
+  FullName nvarchar(255) [not null]
+  DateOfBirth date
+  EnrollmentStatus nvarchar(30) [not null]
+  CreatedAt datetime2 [not null]
+}
+
+// Education account lifecycle
+Table EducationAccounts {
+  Id uniqueidentifier [pk, not null]
+  StudentId uniqueidentifier [not null, unique]
+  AccountNumber nvarchar(50) [not null, unique]
+  Balance decimal(18,2) [not null, default: 0]
+  Status nvarchar(30) [not null]
+  OpenedAt datetime2
+  ClosedAt datetime2
+}
+Table AccountTransactions {
+  Id uniqueidentifier [pk, not null]
+  EducationAccountId uniqueidentifier [not null]
+  TopUpRuleId uniqueidentifier
+  BusinessReference nvarchar(100) [not null, unique, note: 'Idempotency key for financial posting']
+  Amount decimal(18,2) [not null]
+  OccurredAt datetime2 [not null]
+  Indexes { (EducationAccountId, OccurredAt) }
+}
+
+// Fees and assessment
+Table FeeConfigurations {
+  Id uniqueidentifier [pk, not null]
+  SchoolId uniqueidentifier [note: 'NULL may denote a centrally applicable fee']
+  FeeCode nvarchar(50) [not null]
+  FeeName nvarchar(255) [not null]
+  Amount decimal(18,2) [not null]
+  EffectiveFrom date [not null]
+  EffectiveTo date
+}
+Table FeeAssessments {
+  Id uniqueidentifier [pk, not null]
+  StudentId uniqueidentifier [not null]
+  AcademicYear int [not null]
+  TermCode nvarchar(30) [not null]
+  TotalAmount decimal(18,2) [not null]
+  SubsidyAmount decimal(18,2) [not null, default: 0]
+  PayableAmount decimal(18,2) [not null]
+  Status nvarchar(30) [not null]
+  CreatedAt datetime2 [not null]
+  Indexes { (StudentId, AcademicYear, TermCode) }
+}
+Table FeeAssessmentItems {
+  Id uniqueidentifier [pk, not null]
+  Name nvarchar(100) [not null]
+  FeeAssessmentId uniqueidentifier [not null]
+  FeeConfigurationId uniqueidentifier [not null]
+  AssessedAmount decimal(18,2) [not null]
+  SubsidyAmount decimal(18,2) [not null, default: 0]
+}
+
+// Top-up management
+Table TopUpRules {
+  Id uniqueidentifier [pk, not null]
+  UserId uniqueidentifier [not null]
+  RuleName nvarchar(255) [not null]
+  EligibilityDefinition nvarchar(max) [note: 'Provisional rule representation; schema to be confirmed']
+  Amount decimal(18,2) [not null]
+  EffectiveFrom date
+  EffectiveTo date
+  Status nvarchar(30) [not null]
+}
+
+// Financial assistance
+Table FasSchemes {
+  Id uniqueidentifier [pk, not null]
+  SchemeCode nvarchar(50) [not null, unique]
+  SchemeName nvarchar(255) [not null]
+  SchemeType nvarchar(30) [not null, note: 'e.g. MOEFAS or SBFAS; confirm permitted values']
+  Status nvarchar(30) [not null]
+}
+Table FasSchemesDetails {
+  Id uniqueidentifier [pk, not null]
+  FasSchemeId uniqueidentifier [not null]
+  RuleDefinition nvarchar(max) [not null]
+  EffectiveFrom date
+  EffectiveTo date
+}
+Table FasApplications {
+  Id uniqueidentifier [pk, not null]
+  ExternalApplicationId uniqueidentifier [note: 'Logical EService identifier; no cross-database FK']
+  ExternalFamilyId uniqueidentifier [note: 'Logical EService family identifier; no cross-database FK']
+  StudentId uniqueidentifier [not null, note: 'Simplified: one student per application record; family-unit model must be confirmed']
+  ApplicationReference nvarchar(100) [not null, unique]
+  SubmissionChannel nvarchar(30) [not null]
+  Status nvarchar(30) [not null]
+  SubmittedAt datetime2
+  CreatedAt datetime2 [not null]
+}
+Table FasAssessments {
+  Id uniqueidentifier [pk, not null]
+  FasApplicationId uniqueidentifier [not null]
+  FasSchemeId uniqueidentifier [not null]
+  AssessmentOutcome nvarchar(30) [not null]
+  AssessedAmount decimal(18,2)
+  AssessedAt datetime2
+}
+Table FasDecisions {
+  Id uniqueidentifier [pk, not null]
+  FasApplicationId uniqueidentifier [not null]
+  SchoolId uniqueidentifier
+  Decision nvarchar(30) [not null]
+  Remarks nvarchar(max)
+  DecidedAt datetime2
+  DecidedByUserId uniqueidentifier
+}
+
+// Hardcopy FAS
+Table HardcopyFasRecords {
+  Id uniqueidentifier [pk, not null]
+  FasApplicationId uniqueidentifier
+  SchoolId uniqueidentifier [not null]
+  DocumentReference nvarchar(255)
+  CapturedByUserId uniqueidentifier
+  CapturedAt datetime2
+  VerificationStatus nvarchar(30) [not null, note: 'Two-person verification requires further design']
+}
+
+// Budget
+Table Budgets {
+  Id uniqueidentifier [pk, not null]
+  FasSchemeId uniqueidentifier [not null]
+  SchoolId uniqueidentifier [note: 'NULL for national-level budget']
+  FiscalYear int [not null]
+  AllocatedAmount decimal(18,2) [not null]
+  Status nvarchar(30) [not null]
+}
+Table BudgetTransactions {
+  Id uniqueidentifier [pk, not null]
+  BudgetId uniqueidentifier [not null]
+  BusinessReference nvarchar(100) [not null, unique]
+  MovementType nvarchar(30) [not null]
+  Amount decimal(18,2) [not null]
+  OccurredAt datetime2 [not null]
+}
+
+// Access rights (starter RBAC)
+Table AdminUsers {
+  Id uniqueidentifier [pk, not null]
+  ExternalIdentityId nvarchar(200) [not null, unique]
+  DisplayName nvarchar(255) [not null]
+  Email nvarchar(255)
+  SchoolId uniqueidentifier [note: 'NULL for HQ users; complex scopes need separate modeling']
+  Status nvarchar(30) [not null]
+}
+
+// Reliable messaging: one copy in AdminPortalDB, no direct DB-to-DB FK
+Table OutboxMessages {
+  Id uniqueidentifier [pk, not null]
+  MessageId uniqueidentifier [not null, unique]
+  MessageType nvarchar(200) [not null]
+  MessageVersion int [not null, default: 1]
+  Payload nvarchar(max) [not null]
+  CorrelationId uniqueidentifier
+  CreatedAt datetime2 [not null]
+  PublishedAt datetime2
+  NextAttemptAt datetime2
+  Status nvarchar(30) [not null]
+  RetryCount int [not null, default: 0]
+  LastError nvarchar(max)
+  Indexes { (Status, NextAttemptAt) }
+}
+Table InboxMessages {
+  Id uniqueidentifier [pk, not null]
+  MessageId uniqueidentifier [not null]
+  ConsumerName nvarchar(200) [not null]
+  MessageType nvarchar(200) [not null]
+  MessageVersion int [not null, default: 1]
+  Payload nvarchar(max) [not null]
+  ReceivedAt datetime2 [not null]
+  ProcessedAt datetime2
+  Status nvarchar(30) [not null]
+  RetryCount int [not null, default: 0]
+  LastError nvarchar(max)
+  Indexes {
+    (MessageId, ConsumerName) [unique]
+    (Status, ReceivedAt)
+  }
+}
+
+
+Ref: TopUpRules.UserId > AdminUsers.Id
+Ref: Cohorts.SchoolId > Schools.Id
+Ref: Classes.CohortId > Cohorts.Id
+Ref: Students.CurrentClassId > Classes.Id
+Ref: EducationAccounts.StudentId > Students.Id
+Ref: AccountTransactions.EducationAccountId > EducationAccounts.Id
+Ref: FeeConfigurations.SchoolId > Schools.Id
+Ref: FeeAssessments.StudentId > Students.Id
+Ref: FeeAssessmentItems.FeeAssessmentId > FeeAssessments.Id
+Ref: FeeAssessmentItems.FeeConfigurationId > FeeConfigurations.Id
+Ref: AccountTransactions.TopUpRuleId > TopUpRules.Id
+Ref: FasSchemesDetails.FasSchemeId > FasSchemes.Id
+Ref: FasApplications.StudentId > Students.Id
+Ref: FasAssessments.FasApplicationId > FasApplications.Id
+Ref: FasAssessments.FasSchemeId > FasSchemes.Id
+Ref: FasDecisions.FasApplicationId > FasApplications.Id
+Ref: FasDecisions.SchoolId > Schools.Id
+Ref: FasDecisions.DecidedByUserId > AdminUsers.Id
+Ref: HardcopyFasRecords.FasApplicationId > FasApplications.Id
+Ref: HardcopyFasRecords.SchoolId > Schools.Id
+Ref: HardcopyFasRecords.CapturedByUserId > AdminUsers.Id
+Ref: Budgets.FasSchemeId > FasSchemes.Id
+Ref: Budgets.SchoolId > Schools.Id
+Ref: BudgetTransactions.BudgetId > Budgets.Id
+Ref: AdminUsers.SchoolId > Schools.Id
