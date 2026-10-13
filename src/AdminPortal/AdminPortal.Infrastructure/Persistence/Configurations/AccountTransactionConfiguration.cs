@@ -16,6 +16,7 @@ public sealed class AccountTransactionConfiguration : IEntityTypeConfiguration<A
         builder.Property(x => x.BusinessReference).HasColumnType("nvarchar(100)").HasMaxLength(100).IsRequired();
         builder.Property(x => x.Amount).HasColumnType("decimal(18,2)").HasPrecision(18, 2).IsRequired();
         builder.Property(x => x.OccurredAt).HasColumnType("datetime2").IsRequired();
+        builder.Property(x => x.Type).HasConversion<string>().HasColumnType("nvarchar(50)").HasMaxLength(50).IsRequired(false);
         builder.HasIndex(x => x.BusinessReference).IsUnique();
         builder.HasIndex(x => new { x.EducationAccountId, x.OccurredAt });
         builder.HasOne(x => x.EducationAccount).WithMany(x => x.AccountTransactions).HasForeignKey(x => x.EducationAccountId).OnDelete(DeleteBehavior.NoAction);

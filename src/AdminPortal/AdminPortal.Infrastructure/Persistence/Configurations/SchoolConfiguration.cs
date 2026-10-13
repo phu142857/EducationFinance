@@ -14,7 +14,7 @@ public sealed class SchoolConfiguration : IEntityTypeConfiguration<School>
         builder.Property(x => x.SchoolCode).HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
         builder.Property(x => x.Name).HasColumnType("nvarchar(255)").HasMaxLength(255).IsRequired();
         builder.Property(x => x.Address).HasColumnName("Adress").HasColumnType("nvarchar(255)").HasMaxLength(255).IsRequired();
-        builder.Property(x => x.Status).HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
+        builder.Property(x => x.Status).HasConversion<string>().HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
         builder.Property(x => x.CreatedAt).HasColumnType("datetime2").IsRequired();
         builder.HasIndex(x => x.SchoolCode).IsUnique();
     }

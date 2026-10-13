@@ -15,7 +15,7 @@ public sealed class FasApplicationDraftConfiguration : IEntityTypeConfiguration<
         builder.Property(x => x.CreatedByParentId).HasColumnType("uniqueidentifier").IsRequired();
         builder.Property(x => x.DraftPayload).HasColumnType("nvarchar(max)").IsRequired();
         builder.Property(x => x.DraftVersion).HasColumnType("int").HasDefaultValue(1).IsRequired();
-        builder.Property(x => x.DraftStatus).HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
+        builder.Property(x => x.DraftStatus).HasConversion<string>().HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
         builder.Property(x => x.SubmittedApplicationId).HasColumnType("uniqueidentifier").IsRequired(false);
         builder.Property(x => x.CreatedAt).HasColumnType("datetime2").IsRequired();
         builder.Property(x => x.UpdatedAt).HasColumnType("datetime2").IsRequired();

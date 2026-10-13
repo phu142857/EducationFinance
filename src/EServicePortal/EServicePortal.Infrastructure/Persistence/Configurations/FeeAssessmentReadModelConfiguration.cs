@@ -17,7 +17,7 @@ public sealed class FeeAssessmentReadModelConfiguration : IEntityTypeConfigurati
         builder.Property(x => x.TotalAmount).HasColumnType("decimal(18,2)").HasPrecision(18, 2).HasDefaultValue(0m).IsRequired();
         builder.Property(x => x.SubsidyAmount).HasColumnType("decimal(18,2)").HasPrecision(18, 2).HasDefaultValue(0m).IsRequired();
         builder.Property(x => x.PayableAmount).HasColumnType("decimal(18,2)").HasPrecision(18, 2).HasDefaultValue(0m).IsRequired();
-        builder.Property(x => x.AssessmentStatus).HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
+        builder.Property(x => x.AssessmentStatus).HasConversion<string>().HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
         builder.Property(x => x.SyncedAt).HasColumnType("datetime2").IsRequired();
         builder.HasIndex(x => x.StudentId);
         builder.HasOne(x => x.Student).WithMany(x => x.FeeAssessments).HasForeignKey(x => x.StudentId).OnDelete(DeleteBehavior.NoAction);

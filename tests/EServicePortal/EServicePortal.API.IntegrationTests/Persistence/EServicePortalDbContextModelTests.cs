@@ -1,4 +1,5 @@
 using EServicePortal.Domain.Entities;
+using EServicePortal.Domain.Enums;
 using EServicePortal.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -76,7 +77,35 @@ public sealed class EServicePortalDbContextModelTests
         Assert.Contains(familyMember.GetCheckConstraints(), constraint => constraint.Name == "CK_FamilyMembers_ExactlyOneMember");
     }
 
+    [Fact]
+    public void Model_persists_domain_enums_as_strings()
+    {
+        AssertStringEnum<Parent, ParentRegistrationMethod>(nameof(Parent.RegistrationMethod));
+        AssertStringEnum<Parent, ParentStatus>(nameof(Parent.Status));
+        AssertStringEnum<Family, FamilyStatus>(nameof(Family.Status));
+        AssertStringEnum<FamilyMember, FamilyRelationshipType>(nameof(FamilyMember.RelationshipType));
+        AssertStringEnum<StudentReadModel, EnrollmentStatus>(nameof(StudentReadModel.EnrollmentStatus), isNullable: true);
+        AssertStringEnum<EducationAccountReadModel, EducationAccountStatus>(nameof(EducationAccountReadModel.AccountStatus));
+        AssertStringEnum<FeeAssessmentReadModel, FeeAssessmentStatus>(nameof(FeeAssessmentReadModel.AssessmentStatus));
+        AssertStringEnum<FasApplicationReadModel, FasApplicationStatus>(nameof(FasApplicationReadModel.ApplicationStatus));
+        AssertStringEnum<FasApplicationDraft, FasApplicationDraftStatus>(nameof(FasApplicationDraft.DraftStatus));
+        AssertStringEnum<PaymentRequest, PaymentMethod>(nameof(PaymentRequest.PaymentMethod));
+        AssertStringEnum<PaymentRequest, PaymentRequestStatus>(nameof(PaymentRequest.Status));
+        AssertStringEnum<OutboxMessage, OutboxMessageStatus>(nameof(OutboxMessage.Status));
+        AssertStringEnum<InboxMessage, InboxMessageStatus>(nameof(InboxMessage.Status));
+    }
+
     private static IEntityType Entity<TEntity>() => Context.Model.FindEntityType(typeof(TEntity))!;
+
+    private static void AssertStringEnum<TEntity, TEnum>(string propertyName, bool isNullable = false)
+        where TEnum : struct, Enum
+    {
+        var property = Entity<TEntity>().FindProperty(propertyName)!;
+        var expectedClrType = isNullable ? typeof(Nullable<>).MakeGenericType(typeof(TEnum)) : typeof(TEnum);
+
+        Assert.Equal(expectedClrType, property.ClrType);
+        Assert.Equal(typeof(string), property.GetTypeMapping().Converter!.ProviderClrType);
+    }
 
     private static EServicePortalDbContext CreateContext()
     {

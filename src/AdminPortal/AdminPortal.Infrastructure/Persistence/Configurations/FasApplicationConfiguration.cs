@@ -15,11 +15,15 @@ public sealed class FasApplicationConfiguration : IEntityTypeConfiguration<FasAp
         builder.Property(x => x.ExternalFamilyId).HasColumnType("uniqueidentifier").IsRequired(false);
         builder.Property(x => x.StudentId).HasColumnType("uniqueidentifier").IsRequired();
         builder.Property(x => x.ApplicationReference).HasColumnType("nvarchar(100)").HasMaxLength(100).IsRequired();
-        builder.Property(x => x.SubmissionChannel).HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
-        builder.Property(x => x.Status).HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
+        builder.Property(x => x.Status).HasConversion<string>().HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
         builder.Property(x => x.SubmittedAt).HasColumnType("datetime2").IsRequired(false);
         builder.Property(x => x.CreatedAt).HasColumnType("datetime2").IsRequired();
+        builder.Property(x => x.FasSchemeId).HasColumnType("uniqueidentifier").IsRequired();
+        builder.Property(x => x.AssessmentOutcome).HasConversion<string>().HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
+        builder.Property(x => x.AssessedAmount).HasColumnType("decimal(18,2)").HasPrecision(18, 2).IsRequired(false);
+        builder.Property(x => x.AssessedAt).HasColumnType("datetime2").IsRequired(false);
         builder.HasIndex(x => x.ApplicationReference).IsUnique();
         builder.HasOne(x => x.Student).WithMany(x => x.FasApplications).HasForeignKey(x => x.StudentId).OnDelete(DeleteBehavior.NoAction);
+        builder.HasOne(x => x.FasScheme).WithMany(x => x.Applications).HasForeignKey(x => x.FasSchemeId).OnDelete(DeleteBehavior.NoAction);
     }
 }

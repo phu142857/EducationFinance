@@ -16,7 +16,7 @@ public sealed class HardcopyFasRecordConfiguration : IEntityTypeConfiguration<Ha
         builder.Property(x => x.DocumentReference).HasColumnType("nvarchar(255)").HasMaxLength(255).IsRequired(false);
         builder.Property(x => x.CapturedByUserId).HasColumnType("uniqueidentifier").IsRequired(false);
         builder.Property(x => x.CapturedAt).HasColumnType("datetime2").IsRequired(false);
-        builder.Property(x => x.VerificationStatus).HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
+        builder.Property(x => x.VerificationStatus).HasConversion<string>().HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
         builder.HasOne(x => x.FasApplication).WithMany(x => x.HardcopyRecords).HasForeignKey(x => x.FasApplicationId).OnDelete(DeleteBehavior.NoAction);
         builder.HasOne(x => x.School).WithMany(x => x.HardcopyFasRecords).HasForeignKey(x => x.SchoolId).OnDelete(DeleteBehavior.NoAction);
         builder.HasOne(x => x.CapturedByUser).WithMany(x => x.HardcopyFasRecords).HasForeignKey(x => x.CapturedByUserId).OnDelete(DeleteBehavior.NoAction);

@@ -4,8 +4,8 @@ public sealed class FasSchemeDetail
 {
     public Guid Id { get; set; }
     public Guid FasSchemeId { get; set; }
-    public string RuleDefinition { get; set; } = string.Empty;
-    public DateOnly? EffectiveFrom { get; set; }
-    public DateOnly? EffectiveTo { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public int Quator { get; set; }
+    public decimal Value { get; set; }
     public FasScheme FasScheme { get; set; } = null!;
 }

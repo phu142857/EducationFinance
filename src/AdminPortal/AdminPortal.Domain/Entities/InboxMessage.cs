@@ -1,3 +1,5 @@
+using AdminPortal.Domain.Enums;
+
 namespace AdminPortal.Domain.Entities;
 
 public sealed class InboxMessage
@@ -10,7 +12,7 @@ public sealed class InboxMessage
     public string Payload { get; set; } = string.Empty;
     public DateTime ReceivedAt { get; set; }
     public DateTime? ProcessedAt { get; set; }
-    public string Status { get; set; } = string.Empty;
+    public InboxMessageStatus Status { get; set; }
     public int RetryCount { get; set; }
     public string? LastError { get; set; }
 }

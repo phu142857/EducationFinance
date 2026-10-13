@@ -18,7 +18,7 @@ public sealed class InboxMessageConfiguration : IEntityTypeConfiguration<InboxMe
         builder.Property(x => x.Payload).HasColumnType("nvarchar(max)").IsRequired();
         builder.Property(x => x.ReceivedAt).HasColumnType("datetime2").IsRequired();
         builder.Property(x => x.ProcessedAt).HasColumnType("datetime2").IsRequired(false);
-        builder.Property(x => x.Status).HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
+        builder.Property(x => x.Status).HasConversion<string>().HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
         builder.Property(x => x.RetryCount).HasColumnType("int").HasDefaultValue(0).IsRequired();
         builder.Property(x => x.LastError).HasColumnType("nvarchar(max)").IsRequired(false);
         builder.HasIndex(x => new { x.MessageId, x.ConsumerName }).IsUnique();

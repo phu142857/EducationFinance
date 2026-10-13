@@ -13,7 +13,7 @@ public sealed class FasDecisionConfiguration : IEntityTypeConfiguration<FasDecis
         builder.Property(x => x.Id).HasColumnType("uniqueidentifier");
         builder.Property(x => x.FasApplicationId).HasColumnType("uniqueidentifier").IsRequired();
         builder.Property(x => x.SchoolId).HasColumnType("uniqueidentifier").IsRequired(false);
-        builder.Property(x => x.Decision).HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
+        builder.Property(x => x.Decision).HasConversion<string>().HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
         builder.Property(x => x.Remarks).HasColumnType("nvarchar(max)").IsRequired(false);
         builder.Property(x => x.DecidedAt).HasColumnType("datetime2").IsRequired(false);
         builder.Property(x => x.DecidedByUserId).HasColumnType("uniqueidentifier").IsRequired(false);

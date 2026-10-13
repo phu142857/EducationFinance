@@ -1,3 +1,5 @@
+using EServicePortal.Domain.Enums;
+
 namespace EServicePortal.Domain.Entities;
 
 public sealed class FasApplicationReadModel
@@ -5,7 +7,7 @@ public sealed class FasApplicationReadModel
     public Guid FasApplicationId { get; set; }
     public Guid FamilyId { get; set; }
     public string? ApplicationReference { get; set; }
-    public string ApplicationStatus { get; set; } = string.Empty;
+    public FasApplicationStatus ApplicationStatus { get; set; }
     public string? OutcomeSummary { get; set; }
     public DateTime? SubmittedAt { get; set; }
     public DateTime? LastStatusChangedAt { get; set; }

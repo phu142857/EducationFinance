@@ -9,4 +9,5 @@ public sealed class Class
     public int AcademicYear { get; set; }
     public Cohort Cohort { get; set; } = null!;
     public ICollection<Student> Students { get; set; } = [];
+    public ICollection<StudentEnrollment> StudentEnrollments { get; set; } = [];
 }

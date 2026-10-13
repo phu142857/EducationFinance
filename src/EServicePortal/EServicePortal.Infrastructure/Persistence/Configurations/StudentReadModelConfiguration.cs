@@ -14,7 +14,7 @@ public sealed class StudentReadModelConfiguration : IEntityTypeConfiguration<Stu
         builder.Property(x => x.SchoolId).HasColumnType("uniqueidentifier").IsRequired(false);
         builder.Property(x => x.StudentNumber).HasColumnType("nvarchar(60)").HasMaxLength(60).IsRequired(false);
         builder.Property(x => x.DisplayName).HasColumnType("nvarchar(200)").HasMaxLength(200).IsRequired(false);
-        builder.Property(x => x.EnrollmentStatus).HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired(false);
+        builder.Property(x => x.EnrollmentStatus).HasConversion<string>().HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired(false);
         builder.Property(x => x.SyncedAt).HasColumnType("datetime2").IsRequired();
     }
 }

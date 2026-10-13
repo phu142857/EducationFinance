@@ -47,6 +47,10 @@ namespace AdminPortal.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("TopUpRuleId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Type")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BusinessReference")
@@ -272,45 +276,6 @@ namespace AdminPortal.Infrastructure.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("ExternalApplicationId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("ExternalFamilyId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<Guid>("StudentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("SubmissionChannel")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<DateTime?>("SubmittedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ApplicationReference")
-                        .IsUnique();
-
-                    b.ToTable("FasApplications", "dbo");
-                });
-
-            modelBuilder.Entity("AdminPortal.Domain.Entities.FasAssessment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<decimal?>("AssessedAmount")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -323,15 +288,35 @@ namespace AdminPortal.Infrastructure.Persistence.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
-                    b.Property<Guid>("FasApplicationId")
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("ExternalApplicationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ExternalFamilyId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("FasSchemeId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("SubmittedAt")
+                        .HasColumnType("datetime2");
+
                     b.HasKey("Id");
 
-                    b.ToTable("FasAssessments", "dbo");
+                    b.HasIndex("ApplicationReference")
+                        .IsUnique();
+
+                    b.ToTable("FasApplications", "dbo");
                 });
 
             modelBuilder.Entity("AdminPortal.Domain.Entities.FasDecision", b =>
@@ -371,6 +356,11 @@ namespace AdminPortal.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("DividedBy")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
                     b.Property<string>("SchemeCode")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -391,6 +381,10 @@ namespace AdminPortal.Infrastructure.Persistence.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
+                    b.Property<decimal?>("Value")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("SchemeCode")
@@ -405,18 +399,21 @@ namespace AdminPortal.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateOnly?>("EffectiveFrom")
-                        .HasColumnType("date");
-
-                    b.Property<DateOnly?>("EffectiveTo")
-                        .HasColumnType("date");
-
                     b.Property<Guid>("FasSchemeId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("RuleDefinition")
+                    b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("name");
+
+                    b.Property<int>("Quator")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Value")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
@@ -432,8 +429,18 @@ namespace AdminPortal.Infrastructure.Persistence.Migrations
                     b.Property<int>("AcademicYear")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<Guid>("FeeTypeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("Paid")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("PayableAmount")
                         .HasPrecision(18, 2)
@@ -453,74 +460,27 @@ namespace AdminPortal.Infrastructure.Persistence.Migrations
                         .HasColumnType("decimal(18,2)")
                         .HasDefaultValue(0m);
 
-                    b.Property<string>("TermCode")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<decimal>("TotalAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("StudentId", "AcademicYear", "TermCode");
+                    b.HasIndex("StudentId", "AcademicYear");
 
                     b.ToTable("FeeAssessments", "dbo");
                 });
 
-            modelBuilder.Entity("AdminPortal.Domain.Entities.FeeAssessmentItem", b =>
+            modelBuilder.Entity("AdminPortal.Domain.Entities.FeeType", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("AssessedAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<Guid>("FeeAssessmentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("FeeConfigurationId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<decimal>("SubsidyAmount")
-                        .ValueGeneratedOnAdd()
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)")
-                        .HasDefaultValue(0m);
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FeeAssessmentItems", "dbo");
-                });
-
-            modelBuilder.Entity("AdminPortal.Domain.Entities.FeeConfiguration", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("Amount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateOnly>("EffectiveFrom")
                         .HasColumnType("date");
 
                     b.Property<DateOnly?>("EffectiveTo")
                         .HasColumnType("date");
-
-                    b.Property<string>("FeeCode")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("FeeName")
                         .IsRequired()
@@ -530,9 +490,36 @@ namespace AdminPortal.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("SchoolId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.HasKey("Id");
 
-                    b.ToTable("FeeConfigurations", "dbo");
+                    b.ToTable("FeeType", "dbo");
+                });
+
+            modelBuilder.Entity("AdminPortal.Domain.Entities.FeeTypeDetail", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("FeeName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<Guid?>("FeeTypeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FeeTypeDetail", "dbo");
                 });
 
             modelBuilder.Entity("AdminPortal.Domain.Entities.HardcopyFasRecord", b =>
@@ -745,6 +732,10 @@ namespace AdminPortal.Infrastructure.Persistence.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<string>("Status")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
                     b.Property<string>("StudentNumber")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -756,6 +747,27 @@ namespace AdminPortal.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("Students", "dbo");
+                });
+
+            modelBuilder.Entity("AdminPortal.Domain.Entities.StudentEnrollment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ClassId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("StudentEnrollments", "dbo");
                 });
 
             modelBuilder.Entity("AdminPortal.Domain.Entities.TopUpRule", b =>
@@ -793,6 +805,34 @@ namespace AdminPortal.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("TopUpRules", "dbo");
+                });
+
+            modelBuilder.Entity("AdminPortal.Domain.Entities.TopUpRuleDetail", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("name");
+
+                    b.Property<int>("Quator")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TopRuleId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("TopRuleID");
+
+                    b.Property<decimal>("Value")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TopUpRuleDetails", "dbo");
                 });
 
             modelBuilder.Entity("AdminPortal.Domain.Entities.AccountTransaction", b =>
@@ -887,32 +927,21 @@ namespace AdminPortal.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("AdminPortal.Domain.Entities.FasApplication", b =>
                 {
+                    b.HasOne("AdminPortal.Domain.Entities.FasScheme", "FasScheme")
+                        .WithMany("Applications")
+                        .HasForeignKey("FasSchemeId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("AdminPortal.Domain.Entities.Student", "Student")
                         .WithMany("FasApplications")
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("Student");
-                });
-
-            modelBuilder.Entity("AdminPortal.Domain.Entities.FasAssessment", b =>
-                {
-                    b.HasOne("AdminPortal.Domain.Entities.FasApplication", "FasApplication")
-                        .WithMany("Assessments")
-                        .HasForeignKey("FasApplicationId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("AdminPortal.Domain.Entities.FasScheme", "FasScheme")
-                        .WithMany("Assessments")
-                        .HasForeignKey("FasSchemeId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("FasApplication");
-
                     b.Navigation("FasScheme");
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("AdminPortal.Domain.Entities.FasDecision", b =>
@@ -953,42 +982,41 @@ namespace AdminPortal.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("AdminPortal.Domain.Entities.FeeAssessment", b =>
                 {
+                    b.HasOne("AdminPortal.Domain.Entities.FeeType", "FeeType")
+                        .WithMany("FeeAssessments")
+                        .HasForeignKey("FeeTypeId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("AdminPortal.Domain.Entities.Student", "Student")
                         .WithMany("FeeAssessments")
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.Navigation("FeeType");
+
                     b.Navigation("Student");
                 });
 
-            modelBuilder.Entity("AdminPortal.Domain.Entities.FeeAssessmentItem", b =>
-                {
-                    b.HasOne("AdminPortal.Domain.Entities.FeeAssessment", "FeeAssessment")
-                        .WithMany("Items")
-                        .HasForeignKey("FeeAssessmentId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("AdminPortal.Domain.Entities.FeeConfiguration", "FeeConfiguration")
-                        .WithMany("FeeAssessmentItems")
-                        .HasForeignKey("FeeConfigurationId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("FeeAssessment");
-
-                    b.Navigation("FeeConfiguration");
-                });
-
-            modelBuilder.Entity("AdminPortal.Domain.Entities.FeeConfiguration", b =>
+            modelBuilder.Entity("AdminPortal.Domain.Entities.FeeType", b =>
                 {
                     b.HasOne("AdminPortal.Domain.Entities.School", "School")
-                        .WithMany("FeeConfigurations")
+                        .WithMany("FeeTypes")
                         .HasForeignKey("SchoolId")
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("School");
+                });
+
+            modelBuilder.Entity("AdminPortal.Domain.Entities.FeeTypeDetail", b =>
+                {
+                    b.HasOne("AdminPortal.Domain.Entities.FeeType", "FeeType")
+                        .WithMany("Details")
+                        .HasForeignKey("FeeTypeId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("FeeType");
                 });
 
             modelBuilder.Entity("AdminPortal.Domain.Entities.HardcopyFasRecord", b =>
@@ -1026,6 +1054,25 @@ namespace AdminPortal.Infrastructure.Persistence.Migrations
                     b.Navigation("CurrentClass");
                 });
 
+            modelBuilder.Entity("AdminPortal.Domain.Entities.StudentEnrollment", b =>
+                {
+                    b.HasOne("AdminPortal.Domain.Entities.Class", "Class")
+                        .WithMany("StudentEnrollments")
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("AdminPortal.Domain.Entities.Student", "Student")
+                        .WithMany("Enrollments")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Class");
+
+                    b.Navigation("Student");
+                });
+
             modelBuilder.Entity("AdminPortal.Domain.Entities.TopUpRule", b =>
                 {
                     b.HasOne("AdminPortal.Domain.Entities.AdminUser", "User")
@@ -1035,6 +1082,17 @@ namespace AdminPortal.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("AdminPortal.Domain.Entities.TopUpRuleDetail", b =>
+                {
+                    b.HasOne("AdminPortal.Domain.Entities.TopUpRule", "TopUpRule")
+                        .WithMany("Details")
+                        .HasForeignKey("TopRuleId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("TopUpRule");
                 });
 
             modelBuilder.Entity("AdminPortal.Domain.Entities.AdminUser", b =>
@@ -1053,6 +1111,8 @@ namespace AdminPortal.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("AdminPortal.Domain.Entities.Class", b =>
                 {
+                    b.Navigation("StudentEnrollments");
+
                     b.Navigation("Students");
                 });
 
@@ -1068,8 +1128,6 @@ namespace AdminPortal.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("AdminPortal.Domain.Entities.FasApplication", b =>
                 {
-                    b.Navigation("Assessments");
-
                     b.Navigation("Decisions");
 
                     b.Navigation("HardcopyRecords");
@@ -1077,21 +1135,18 @@ namespace AdminPortal.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("AdminPortal.Domain.Entities.FasScheme", b =>
                 {
-                    b.Navigation("Assessments");
+                    b.Navigation("Applications");
 
                     b.Navigation("Budgets");
 
                     b.Navigation("Details");
                 });
 
-            modelBuilder.Entity("AdminPortal.Domain.Entities.FeeAssessment", b =>
+            modelBuilder.Entity("AdminPortal.Domain.Entities.FeeType", b =>
                 {
-                    b.Navigation("Items");
-                });
+                    b.Navigation("Details");
 
-            modelBuilder.Entity("AdminPortal.Domain.Entities.FeeConfiguration", b =>
-                {
-                    b.Navigation("FeeAssessmentItems");
+                    b.Navigation("FeeAssessments");
                 });
 
             modelBuilder.Entity("AdminPortal.Domain.Entities.School", b =>
@@ -1104,7 +1159,7 @@ namespace AdminPortal.Infrastructure.Persistence.Migrations
 
                     b.Navigation("FasDecisions");
 
-                    b.Navigation("FeeConfigurations");
+                    b.Navigation("FeeTypes");
 
                     b.Navigation("HardcopyFasRecords");
                 });
@@ -1112,6 +1167,8 @@ namespace AdminPortal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("AdminPortal.Domain.Entities.Student", b =>
                 {
                     b.Navigation("EducationAccount");
+
+                    b.Navigation("Enrollments");
 
                     b.Navigation("FasApplications");
 
@@ -1121,6 +1178,8 @@ namespace AdminPortal.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("AdminPortal.Domain.Entities.TopUpRule", b =>
                 {
                     b.Navigation("AccountTransactions");
+
+                    b.Navigation("Details");
                 });
 #pragma warning restore 612, 618
         }

@@ -16,8 +16,8 @@ public sealed class PaymentRequestConfiguration : IEntityTypeConfiguration<Payme
         builder.Property(x => x.FeeAssessmentId).HasColumnType("uniqueidentifier").IsRequired(false);
         builder.Property(x => x.Amount).HasColumnType("decimal(18,2)").HasPrecision(18, 2).IsRequired();
         builder.Property(x => x.CurrencyCode).HasColumnType("char(3)").HasMaxLength(3).HasDefaultValue("SGD").IsRequired();
-        builder.Property(x => x.PaymentMethod).HasColumnType("nvarchar(40)").HasMaxLength(40).IsRequired();
-        builder.Property(x => x.Status).HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
+        builder.Property(x => x.PaymentMethod).HasConversion<string>().HasColumnType("nvarchar(40)").HasMaxLength(40).IsRequired();
+        builder.Property(x => x.Status).HasConversion<string>().HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
         builder.Property(x => x.ExternalReference).HasColumnType("nvarchar(100)").HasMaxLength(100).IsRequired(false);
         builder.Property(x => x.FailureReason).HasColumnType("nvarchar(500)").HasMaxLength(500).IsRequired(false);
         builder.Property(x => x.CreatedAt).HasColumnType("datetime2").IsRequired();

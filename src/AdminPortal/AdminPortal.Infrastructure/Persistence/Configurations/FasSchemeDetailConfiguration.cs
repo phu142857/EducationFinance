@@ -12,9 +12,9 @@ public sealed class FasSchemeDetailConfiguration : IEntityTypeConfiguration<FasS
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Id).HasColumnType("uniqueidentifier");
         builder.Property(x => x.FasSchemeId).HasColumnType("uniqueidentifier").IsRequired();
-        builder.Property(x => x.RuleDefinition).HasColumnType("nvarchar(max)").IsRequired();
-        builder.Property(x => x.EffectiveFrom).HasColumnType("date").IsRequired(false);
-        builder.Property(x => x.EffectiveTo).HasColumnType("date").IsRequired(false);
+        builder.Property(x => x.Name).HasColumnName("name").HasColumnType("nvarchar(255)").HasMaxLength(255).IsRequired();
+        builder.Property(x => x.Quator).HasColumnType("int").IsRequired();
+        builder.Property(x => x.Value).HasColumnType("decimal(18,2)").HasPrecision(18, 2).IsRequired();
         builder.HasOne(x => x.FasScheme).WithMany(x => x.Details).HasForeignKey(x => x.FasSchemeId).OnDelete(DeleteBehavior.NoAction);
     }
 }

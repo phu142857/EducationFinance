@@ -16,7 +16,7 @@ public sealed class FamilyMemberConfiguration : IEntityTypeConfiguration<FamilyM
         builder.Property(x => x.FamilyId).HasColumnType("uniqueidentifier").IsRequired();
         builder.Property(x => x.ParentId).HasColumnType("uniqueidentifier").IsRequired(false);
         builder.Property(x => x.StudentId).HasColumnType("uniqueidentifier").IsRequired(false);
-        builder.Property(x => x.RelationshipType).HasColumnType("nvarchar(40)").HasMaxLength(40).IsRequired();
+        builder.Property(x => x.RelationshipType).HasConversion<string>().HasColumnType("nvarchar(40)").HasMaxLength(40).IsRequired();
         builder.Property(x => x.IsPrimaryContact).HasColumnType("bit").HasDefaultValue(false).IsRequired();
         builder.Property(x => x.CreatedAt).HasColumnType("datetime2").IsRequired();
         builder.HasIndex(x => x.FamilyId);

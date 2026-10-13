@@ -13,7 +13,7 @@ public sealed class FasApplicationReadModelConfiguration : IEntityTypeConfigurat
         builder.Property(x => x.FasApplicationId).HasColumnType("uniqueidentifier");
         builder.Property(x => x.FamilyId).HasColumnType("uniqueidentifier").IsRequired();
         builder.Property(x => x.ApplicationReference).HasColumnType("nvarchar(80)").HasMaxLength(80).IsRequired(false);
-        builder.Property(x => x.ApplicationStatus).HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
+        builder.Property(x => x.ApplicationStatus).HasConversion<string>().HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
         builder.Property(x => x.OutcomeSummary).HasColumnType("nvarchar(255)").HasMaxLength(255).IsRequired(false);
         builder.Property(x => x.SubmittedAt).HasColumnType("datetime2").IsRequired(false);
         builder.Property(x => x.LastStatusChangedAt).HasColumnType("datetime2").IsRequired(false);

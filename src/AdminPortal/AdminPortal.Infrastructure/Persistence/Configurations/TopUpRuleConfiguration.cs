@@ -17,7 +17,7 @@ public sealed class TopUpRuleConfiguration : IEntityTypeConfiguration<TopUpRule>
         builder.Property(x => x.Amount).HasColumnType("decimal(18,2)").HasPrecision(18, 2).IsRequired();
         builder.Property(x => x.EffectiveFrom).HasColumnType("date").IsRequired(false);
         builder.Property(x => x.EffectiveTo).HasColumnType("date").IsRequired(false);
-        builder.Property(x => x.Status).HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
+        builder.Property(x => x.Status).HasConversion<string>().HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
         builder.HasOne(x => x.User).WithMany(x => x.TopUpRules).HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.NoAction);
     }
 }

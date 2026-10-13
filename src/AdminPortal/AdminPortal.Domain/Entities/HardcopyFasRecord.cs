@@ -1,3 +1,5 @@
+using AdminPortal.Domain.Enums;
+
 namespace AdminPortal.Domain.Entities;
 
 public sealed class HardcopyFasRecord
@@ -8,7 +10,7 @@ public sealed class HardcopyFasRecord
     public string? DocumentReference { get; set; }
     public Guid? CapturedByUserId { get; set; }
     public DateTime? CapturedAt { get; set; }
-    public string VerificationStatus { get; set; } = string.Empty;
+    public VerificationStatus VerificationStatus { get; set; }
     public FasApplication? FasApplication { get; set; }
     public School School { get; set; } = null!;
     public AdminUser? CapturedByUser { get; set; }

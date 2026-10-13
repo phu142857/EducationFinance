@@ -14,7 +14,7 @@ public sealed class EducationAccountConfiguration : IEntityTypeConfiguration<Edu
         builder.Property(x => x.StudentId).HasColumnType("uniqueidentifier").IsRequired();
         builder.Property(x => x.AccountNumber).HasColumnType("nvarchar(50)").HasMaxLength(50).IsRequired();
         builder.Property(x => x.Balance).HasColumnType("decimal(18,2)").HasPrecision(18, 2).HasDefaultValue(0m).IsRequired();
-        builder.Property(x => x.Status).HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
+        builder.Property(x => x.Status).HasConversion<string>().HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
         builder.Property(x => x.OpenedAt).HasColumnType("datetime2").IsRequired(false);
         builder.Property(x => x.ClosedAt).HasColumnType("datetime2").IsRequired(false);
         builder.HasIndex(x => x.StudentId).IsUnique();

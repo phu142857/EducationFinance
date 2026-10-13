@@ -16,7 +16,7 @@ public sealed class OutboxMessageConfiguration : IEntityTypeConfiguration<Outbox
         builder.Property(x => x.Payload).HasColumnType("nvarchar(max)").IsRequired();
         builder.Property(x => x.CorrelationId).HasColumnType("uniqueidentifier").IsRequired(false);
         builder.Property(x => x.Destination).HasColumnType("nvarchar(100)").HasMaxLength(100).IsRequired();
-        builder.Property(x => x.Status).HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
+        builder.Property(x => x.Status).HasConversion<string>().HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
         builder.Property(x => x.OccurredAt).HasColumnType("datetime2").IsRequired();
         builder.Property(x => x.NextAttemptAt).HasColumnType("datetime2").IsRequired(false);
         builder.Property(x => x.AttemptCount).HasColumnType("int").HasDefaultValue(0).IsRequired();

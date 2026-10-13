@@ -1,3 +1,5 @@
+using EServicePortal.Domain.Enums;
+
 namespace EServicePortal.Domain.Entities;
 
 public sealed class FeeAssessmentReadModel
@@ -9,7 +11,7 @@ public sealed class FeeAssessmentReadModel
     public decimal TotalAmount { get; set; }
     public decimal SubsidyAmount { get; set; }
     public decimal PayableAmount { get; set; }
-    public string AssessmentStatus { get; set; } = string.Empty;
+    public FeeAssessmentStatus AssessmentStatus { get; set; }
     public DateTime SyncedAt { get; set; }
     public StudentReadModel Student { get; set; } = null!;
     public ICollection<PaymentRequest> PaymentRequests { get; set; } = [];

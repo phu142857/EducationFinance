@@ -17,8 +17,8 @@ public sealed class ParentConfiguration : IEntityTypeConfiguration<Parent>
         builder.Property(x => x.PhoneNumber).HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired(false);
         builder.Property(x => x.Address).HasColumnType("nvarchar(100)").HasMaxLength(100).IsRequired(false);
         builder.Property(x => x.MailingAddress).HasColumnType("nvarchar(50)").HasMaxLength(50).IsRequired(false);
-        builder.Property(x => x.RegistrationMethod).HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
-        builder.Property(x => x.Status).HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
+        builder.Property(x => x.RegistrationMethod).HasConversion<string>().HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
+        builder.Property(x => x.Status).HasConversion<string>().HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
         builder.Property(x => x.CreatedAt).HasColumnType("datetime2").IsRequired();
         builder.Property(x => x.UpdatedAt).HasColumnType("datetime2").IsRequired(false);
         builder.HasIndex(x => x.ExternalIdentitySubject).IsUnique().HasFilter("[ExternalIdentitySubject] IS NOT NULL");

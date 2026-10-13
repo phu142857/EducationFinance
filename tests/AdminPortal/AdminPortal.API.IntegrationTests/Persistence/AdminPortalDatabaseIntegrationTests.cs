@@ -17,16 +17,18 @@ public sealed class AdminPortalDatabaseIntegrationTests
 
         Assert.True(await context.Database.CanConnectAsync());
         Assert.Empty(await context.Database.GetPendingMigrationsAsync());
-        Assert.Equal(21, await ScalarAsync(context, """
+        Assert.Equal(22, await ScalarAsync(context, """
             SELECT COUNT(*)
             FROM sys.tables AS t
             INNER JOIN sys.schemas AS s ON s.schema_id = t.schema_id
             WHERE s.name = N'dbo' AND t.name <> N'__EFMigrationsHistory';
             """));
-        Assert.Equal(1, await ScalarAsync(context, """
+        Assert.Equal(2, await ScalarAsync(context, """
             SELECT COUNT(*)
             FROM dbo.__EFMigrationsHistory
-            WHERE MigrationId = N'20261012165348_InitialCreate'
+            WHERE MigrationId IN (
+                N'20261012165348_InitialCreate',
+                N'20261013042946_AlignAdminPortalWithDbml')
               AND ProductVersion = N'10.0.12';
             """));
     }

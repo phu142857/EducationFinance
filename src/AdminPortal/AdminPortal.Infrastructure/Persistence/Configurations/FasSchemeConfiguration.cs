@@ -13,8 +13,10 @@ public sealed class FasSchemeConfiguration : IEntityTypeConfiguration<FasScheme>
         builder.Property(x => x.Id).HasColumnType("uniqueidentifier");
         builder.Property(x => x.SchemeCode).HasColumnType("nvarchar(50)").HasMaxLength(50).IsRequired();
         builder.Property(x => x.SchemeName).HasColumnType("nvarchar(255)").HasMaxLength(255).IsRequired();
-        builder.Property(x => x.SchemeType).HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
-        builder.Property(x => x.Status).HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
+        builder.Property(x => x.SchemeType).HasConversion<string>().HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
+        builder.Property(x => x.Status).HasConversion<string>().HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
+        builder.Property(x => x.DividedBy).HasConversion<string>().HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
+        builder.Property(x => x.Value).HasColumnType("decimal(18,2)").HasPrecision(18, 2).IsRequired(false);
         builder.HasIndex(x => x.SchemeCode).IsUnique();
     }
 }

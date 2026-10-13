@@ -1,3 +1,5 @@
+using EServicePortal.Domain.Enums;
+
 namespace EServicePortal.Domain.Entities;
 
 public sealed class OutboxMessage
@@ -8,7 +10,7 @@ public sealed class OutboxMessage
     public string Payload { get; set; } = string.Empty;
     public Guid? CorrelationId { get; set; }
     public string Destination { get; set; } = string.Empty;
-    public string Status { get; set; } = string.Empty;
+    public OutboxMessageStatus Status { get; set; }
     public DateTime OccurredAt { get; set; }
     public DateTime? NextAttemptAt { get; set; }
     public int AttemptCount { get; set; }

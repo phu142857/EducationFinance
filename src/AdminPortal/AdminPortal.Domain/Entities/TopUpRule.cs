@@ -1,3 +1,5 @@
+using AdminPortal.Domain.Enums;
+
 namespace AdminPortal.Domain.Entities;
 
 public sealed class TopUpRule
@@ -9,7 +11,8 @@ public sealed class TopUpRule
     public decimal Amount { get; set; }
     public DateOnly? EffectiveFrom { get; set; }
     public DateOnly? EffectiveTo { get; set; }
-    public string Status { get; set; } = string.Empty;
+    public TopUpRuleStatus Status { get; set; }
     public AdminUser User { get; set; } = null!;
+    public ICollection<TopUpRuleDetail> Details { get; set; } = [];
     public ICollection<AccountTransaction> AccountTransactions { get; set; } = [];
 }

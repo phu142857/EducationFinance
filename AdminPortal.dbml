@@ -29,14 +29,22 @@ Table Classes {
   AcademicYear int [not null]
   Indexes { (CohortId, ClassCode) [unique] }
 }
+
 Table Students {
   Id uniqueidentifier [pk, not null]
   CurrentClassId uniqueidentifier [note: 'Current class only; enrollment history requires separate table']
   StudentNumber nvarchar(50) [not null, unique]
   FullName nvarchar(255) [not null]
   DateOfBirth date
+  Status nvarchar(30)
   EnrollmentStatus nvarchar(30) [not null]
   CreatedAt datetime2 [not null]
+}
+Table StudentEnrollments{
+  Id uniqueidentifier [pk, not null]
+  StudentId uniqueidentifier  [not null]
+  ClassId  uniqueidentifier [not null]
+  Status nvarchar(30)
 }
 
 // Education account lifecycle
@@ -56,39 +64,48 @@ Table AccountTransactions {
   BusinessReference nvarchar(100) [not null, unique, note: 'Idempotency key for financial posting']
   Amount decimal(18,2) [not null]
   OccurredAt datetime2 [not null]
+  Type nvarchar(50)
   Indexes { (EducationAccountId, OccurredAt) }
 }
-
-// Fees and assessment
-Table FeeConfigurations {
+Table FeeType {
   Id uniqueidentifier [pk, not null]
   SchoolId uniqueidentifier [note: 'NULL may denote a centrally applicable fee']
-  FeeCode nvarchar(50) [not null]
   FeeName nvarchar(255) [not null]
-  Amount decimal(18,2) [not null]
+  TotalAmount decimal(18,2) [not null]
   EffectiveFrom date [not null]
   EffectiveTo date
 }
+// Fees and assessment
+Table FeeTypeDetail {
+  Id uniqueidentifier [pk, not null]
+  FeeTypeId uniqueidentifier [note: 'NULL may denote a centrally applicable fee']
+  FeeName nvarchar(255) [not null]
+  Amount decimal(18,2) [not null]
+}
+
 Table FeeAssessments {
   Id uniqueidentifier [pk, not null]
   StudentId uniqueidentifier [not null]
+  FeeTypeId uniqueidentifier [not null]
   AcademicYear int [not null]
-  TermCode nvarchar(30) [not null]
-  TotalAmount decimal(18,2) [not null]
+  Amount decimal(18,2) [not null]
   SubsidyAmount decimal(18,2) [not null, default: 0]
   PayableAmount decimal(18,2) [not null]
+  Paid uniqueidentifier [not null]
   Status nvarchar(30) [not null]
   CreatedAt datetime2 [not null]
-  Indexes { (StudentId, AcademicYear, TermCode) }
+  UpdatedAt datetime2 [not null]
+  Indexes { (StudentId, AcademicYear) }
 }
-Table FeeAssessmentItems {
-  Id uniqueidentifier [pk, not null]
-  Name nvarchar(100) [not null]
-  FeeAssessmentId uniqueidentifier [not null]
-  FeeConfigurationId uniqueidentifier [not null]
-  AssessedAmount decimal(18,2) [not null]
-  SubsidyAmount decimal(18,2) [not null, default: 0]
-}
+
+// Table FeeAssessmentItems {
+//   Id uniqueidentifier [pk, not null]
+//   Name nvarchar(100) [not null]
+//   FeeAssessmentId uniqueidentifier [not null]
+//   FeeConfigurationId uniqueidentifier [not null]
+//   AssessedAmount decimal(18,2) [not null]
+//   SubsidyAmount decimal(18,2) [not null, default: 0]
+// }
 
 // Top-up management
 Table TopUpRules {
@@ -102,6 +119,14 @@ Table TopUpRules {
   Status nvarchar(30) [not null]
 }
 
+Table TopUpRuleDetails {
+  Id uniqueidentifier [pk, not null]
+  TopRuleID uniqueidentifier [not null]
+  name nvarchar(255) [not null]
+  Quator int [not null]
+  Value decimal(18,2) [not null]
+}
+
 // Financial assistance
 Table FasSchemes {
   Id uniqueidentifier [pk, not null]
@@ -109,13 +134,15 @@ Table FasSchemes {
   SchemeName nvarchar(255) [not null]
   SchemeType nvarchar(30) [not null, note: 'e.g. MOEFAS or SBFAS; confirm permitted values']
   Status nvarchar(30) [not null]
+  DividedBy nvarchar(30) [not null]
+  Value decimal(18,2)
 }
 Table FasSchemesDetails {
   Id uniqueidentifier [pk, not null]
   FasSchemeId uniqueidentifier [not null]
-  RuleDefinition nvarchar(max) [not null]
-  EffectiveFrom date
-  EffectiveTo date
+  name nvarchar(255) [not null]
+  Quator int [not null]
+  Value decimal(18,2) [not null]
 }
 Table FasApplications {
   Id uniqueidentifier [pk, not null]
@@ -123,19 +150,15 @@ Table FasApplications {
   ExternalFamilyId uniqueidentifier [note: 'Logical EService family identifier; no cross-database FK']
   StudentId uniqueidentifier [not null, note: 'Simplified: one student per application record; family-unit model must be confirmed']
   ApplicationReference nvarchar(100) [not null, unique]
-  SubmissionChannel nvarchar(30) [not null]
   Status nvarchar(30) [not null]
   SubmittedAt datetime2
   CreatedAt datetime2 [not null]
-}
-Table FasAssessments {
-  Id uniqueidentifier [pk, not null]
-  FasApplicationId uniqueidentifier [not null]
   FasSchemeId uniqueidentifier [not null]
   AssessmentOutcome nvarchar(30) [not null]
   AssessedAmount decimal(18,2)
   AssessedAt datetime2
 }
+
 Table FasDecisions {
   Id uniqueidentifier [pk, not null]
   FasApplicationId uniqueidentifier [not null]
@@ -219,22 +242,20 @@ Table InboxMessages {
   }
 }
 
-
+Ref: TopUpRuleDetails.TopRuleID > TopUpRules.Id
 Ref: TopUpRules.UserId > AdminUsers.Id
 Ref: Cohorts.SchoolId > Schools.Id
 Ref: Classes.CohortId > Cohorts.Id
 Ref: Students.CurrentClassId > Classes.Id
 Ref: EducationAccounts.StudentId > Students.Id
 Ref: AccountTransactions.EducationAccountId > EducationAccounts.Id
-Ref: FeeConfigurations.SchoolId > Schools.Id
+Ref: FeeType.SchoolId > Schools.Id
 Ref: FeeAssessments.StudentId > Students.Id
-Ref: FeeAssessmentItems.FeeAssessmentId > FeeAssessments.Id
-Ref: FeeAssessmentItems.FeeConfigurationId > FeeConfigurations.Id
+Ref: FeeTypeDetail.FeeTypeId > FeeType.Id
+Ref: FeeAssessments.FeeTypeId > FeeType.Id
 Ref: AccountTransactions.TopUpRuleId > TopUpRules.Id
 Ref: FasSchemesDetails.FasSchemeId > FasSchemes.Id
 Ref: FasApplications.StudentId > Students.Id
-Ref: FasAssessments.FasApplicationId > FasApplications.Id
-Ref: FasAssessments.FasSchemeId > FasSchemes.Id
 Ref: FasDecisions.FasApplicationId > FasApplications.Id
 Ref: FasDecisions.SchoolId > Schools.Id
 Ref: FasDecisions.DecidedByUserId > AdminUsers.Id
@@ -245,3 +266,7 @@ Ref: Budgets.FasSchemeId > FasSchemes.Id
 Ref: Budgets.SchoolId > Schools.Id
 Ref: BudgetTransactions.BudgetId > Budgets.Id
 Ref: AdminUsers.SchoolId > Schools.Id
+Ref: StudentEnrollments.StudentId < Students.Id
+Ref: StudentEnrollments.ClassId < Classes.Id
+Ref: FasApplications.FasSchemeId < FasSchemes.Id
+

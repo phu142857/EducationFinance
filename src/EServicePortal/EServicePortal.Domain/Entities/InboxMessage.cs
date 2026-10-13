@@ -1,3 +1,5 @@
+using EServicePortal.Domain.Enums;
+
 namespace EServicePortal.Domain.Entities;
 
 public sealed class InboxMessage
@@ -8,7 +10,7 @@ public sealed class InboxMessage
     public string MessageType { get; set; } = string.Empty;
     public int MessageVersion { get; set; }
     public string Payload { get; set; } = string.Empty;
-    public string Status { get; set; } = string.Empty;
+    public InboxMessageStatus Status { get; set; }
     public DateTime ReceivedAt { get; set; }
     public DateTime? ProcessedAt { get; set; }
     public int AttemptCount { get; set; }

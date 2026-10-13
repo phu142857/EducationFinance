@@ -1,3 +1,5 @@
+using AdminPortal.Domain.Enums;
+
 namespace AdminPortal.Domain.Entities;
 
 public sealed class AdminUser
@@ -7,7 +9,7 @@ public sealed class AdminUser
     public string DisplayName { get; set; } = string.Empty;
     public string? Email { get; set; }
     public Guid? SchoolId { get; set; }
-    public string Status { get; set; } = string.Empty;
+    public AdminUserStatus Status { get; set; }
     public School? School { get; set; }
     public ICollection<TopUpRule> TopUpRules { get; set; } = [];
     public ICollection<FasDecision> FasDecisions { get; set; } = [];

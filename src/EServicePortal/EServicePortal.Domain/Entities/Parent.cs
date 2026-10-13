@@ -1,3 +1,5 @@
+using EServicePortal.Domain.Enums;
+
 namespace EServicePortal.Domain.Entities;
 
 public sealed class Parent
@@ -9,8 +11,8 @@ public sealed class Parent
     public string? PhoneNumber { get; set; }
     public string? Address { get; set; }
     public string? MailingAddress { get; set; }
-    public string RegistrationMethod { get; set; } = string.Empty;
-    public string Status { get; set; } = string.Empty;
+    public ParentRegistrationMethod RegistrationMethod { get; set; }
+    public ParentStatus Status { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public ICollection<FamilyMember> FamilyMemberships { get; set; } = [];

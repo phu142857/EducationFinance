@@ -15,7 +15,7 @@ public sealed class AdminUserConfiguration : IEntityTypeConfiguration<AdminUser>
         builder.Property(x => x.DisplayName).HasColumnType("nvarchar(255)").HasMaxLength(255).IsRequired();
         builder.Property(x => x.Email).HasColumnType("nvarchar(255)").HasMaxLength(255).IsRequired(false);
         builder.Property(x => x.SchoolId).HasColumnType("uniqueidentifier").IsRequired(false);
-        builder.Property(x => x.Status).HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
+        builder.Property(x => x.Status).HasConversion<string>().HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired();
         builder.HasIndex(x => x.ExternalIdentityId).IsUnique();
         builder.HasOne(x => x.School).WithMany(x => x.AdminUsers).HasForeignKey(x => x.SchoolId).OnDelete(DeleteBehavior.NoAction);
     }

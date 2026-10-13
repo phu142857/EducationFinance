@@ -1,3 +1,5 @@
+using EServicePortal.Domain.Enums;
+
 namespace EServicePortal.Domain.Entities;
 
 public sealed class FasApplicationDraft
@@ -7,7 +9,7 @@ public sealed class FasApplicationDraft
     public Guid CreatedByParentId { get; set; }
     public string DraftPayload { get; set; } = string.Empty;
     public int DraftVersion { get; set; }
-    public string DraftStatus { get; set; } = string.Empty;
+    public FasApplicationDraftStatus DraftStatus { get; set; }
     public Guid? SubmittedApplicationId { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

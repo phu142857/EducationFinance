@@ -1,3 +1,5 @@
+using AdminPortal.Domain.Enums;
+
 namespace AdminPortal.Domain.Entities;
 
 public sealed class OutboxMessage
@@ -11,7 +13,7 @@ public sealed class OutboxMessage
     public DateTime CreatedAt { get; set; }
     public DateTime? PublishedAt { get; set; }
     public DateTime? NextAttemptAt { get; set; }
-    public string Status { get; set; } = string.Empty;
+    public OutboxMessageStatus Status { get; set; }
     public int RetryCount { get; set; }
     public string? LastError { get; set; }
 }
